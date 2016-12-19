@@ -1,10 +1,11 @@
-#include <unistd.h>       // for close
+#include <unistd.h>       // for close and fcntl
 
-#include <sys/types.h>    // for socket, connect, getaddrinfo and accept
-#include <sys/socket.h>   // for socket, connect, getaddrinfo, accept and shutdown
-#include <netinet/in.h>   // for sockaddr_in
+#include <sys/types.h>    // for socket, connect, getaddrinfo, accept and getsockopt
+#include <sys/socket.h>   // for socket, connect, getaddrinfo, accept, shutdown and getsockopt
+#include <netinet/in.h>   // for sockaddr_in and sockaddr_in6
 #include <arpa/inet.h>    // for htons and inet_pton
 #include <netdb.h>        // for getaddrinfo
+#include <fcntl.h>        // for fcntl
 
 #include <string.h>       // for memset and memcpy
 #include <stdint.h>       // for uint8_t and uint32_t
@@ -17,6 +18,25 @@ void Sdeactivate_thread(void);
 void Slock_object(void*);
 void Sunlock_object(void*);
 
+int ss_set_fd_non_blocking(int fd) {
+  int flags = fcntl(fd, F_GETFL, 0);
+  if (flags == -1) return 0;
+  return fcntl(fd, F_SETFL, (flags | O_NONBLOCK)) != -1;
+}
+
+int ss_set_fd_blocking(int fd) {
+  int flags = fcntl(fd, F_GETFL, 0);
+  if (flags == -1) return 0;
+  return fcntl(fd, F_SETFL, (flags & ~O_NONBLOCK)) != -1;
+}
+
+int ss_check_sock_error(int fd) {
+  int val = 0;
+  int len = sizeof(val);
+  int res = getsockopt(fd, SOL_SOCKET, SO_ERROR, (void*)&val, (socklen_t*)&len);
+  return val;
+}
+
 // arguments: if port is greater than 0, it is set as the port to
 // which the connection will be made, otherwise this is deduced from
 // the service argument.  The service argument may be NULL, in which
@@ -25,7 +45,8 @@ void Sunlock_object(void*);
 // return value: file descriptor of socket, or -1 on failure to look
 // up address, -2 on failure to construct a socket, -3 on a failure to
 // connect
-int connect_to_ipv4_host(const char* address, const char* service, unsigned short port) {
+int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
+				 unsigned short port, int blocking) {
 
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
@@ -56,19 +77,24 @@ int connect_to_ipv4_host(const char* address, const char* service, unsigned shor
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1) {
       err = -2;
-      continue;
+      break;
     }
-    
+    if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+      close(sock);
+      err = -2;
+      break;
+    }
+
     struct sockaddr* in = tmp->ai_addr;
     // if we passed NULL to the service argument of getaddrinfo, we
     // have to set the port number by hand or connect will fail
-    if (port)
+    if (port > 0)
       ((struct sockaddr_in*)in)->sin_port = htons(port);
     int res;
     do {
       res = connect(sock, in, sizeof(struct sockaddr_in));
     } while (res == -1 && errno == EINTR);
-    if (res) {
+    if (res == -1 && errno != EINPROGRESS) {
       close(sock);
       err = -3;
       continue;
@@ -92,8 +118,9 @@ int connect_to_ipv4_host(const char* address, const char* service, unsigned shor
 
 // return value: file descriptor of socket, or -1 on failure to look
 // up address, -2 on failure to construct a socket, -3 on a failure to
-// connect
-int connect_to_ipv6_host(const char* address, const char* service, unsigned short port) {
+// connect with blocking true.
+int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
+				 unsigned short port, int blocking) {
 
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
@@ -124,19 +151,24 @@ int connect_to_ipv6_host(const char* address, const char* service, unsigned shor
     sock = socket(AF_INET6, SOCK_STREAM, 0);
     if (sock == -1) {
       err = -2;
-      continue;
+      break;
+    }
+    if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+      close(sock);
+      err = -2;
+      break;
     }
     
     struct sockaddr* in = tmp->ai_addr;
     // if we passed NULL to the service argument of getaddrinfo, we
     // have to set the port number by hand or connect will fail
-    if (port)
+    if (port > 0)
       ((struct sockaddr_in6*)in)->sin6_port = htons(port);
     int res;
     do {
       res = connect(sock, in, sizeof(struct sockaddr_in6));
     } while (res == -1 && errno == EINTR);
-    if (res) {
+    if (res == -1 && errno != EINPROGRESS) {
       close(sock);
       err = -3;
       continue;
@@ -153,15 +185,15 @@ int connect_to_ipv6_host(const char* address, const char* service, unsigned shor
   return sock;
 }
 
-// arguments: if local is true, the socket will only listen on
-// localhost.  If false, it will listen for any address.  port is the
+// arguments: if local is true, the socket will only bind on
+// localhost.  If false, it will bind on any interface.  port is the
 // port to listen on.  backlog is the maximum number of queueing
 // connections.
 
 // return value: file descriptor of socket, or -1 on failure to make
 // an address, -2 on failure to create a socket, -3 on a failure to
 // bind to the socket, and -4 on a failure to listen on the socket
-int listen_on_ipv4_socket(int local, unsigned short port, int backlog) {
+int ss_listen_on_ipv4_socket_impl(int local, unsigned short port, int backlog) {
 
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
@@ -193,15 +225,15 @@ int listen_on_ipv4_socket(int local, unsigned short port, int backlog) {
   return sock;
 }
 
-// arguments: if local is true, the socket will only listen on
-// localhost.  If false, it will listen for any address.  port is the
+// arguments: if local is true, the socket will only bind on
+// localhost.  If false, it will bind on any interface.  port is the
 // port to listen on.  backlog is the maximum number of queueing
 // connections.
 
 // return value: file descriptor of socket, or -1 on failure to make
 // an address, -2 on failure to create a socket, -3 on a failure to
 // bind to the socket, and -4 on a failure to listen on the socket
-int listen_on_ipv6_socket(int local, unsigned short port, int backlog) {
+int ss_listen_on_ipv6_socket_impl(int local, unsigned short port, int backlog) {
 
   struct sockaddr_in6 addr;
   memset(&addr, 0, sizeof(addr));
@@ -236,11 +268,11 @@ int listen_on_ipv6_socket(int local, unsigned short port, int backlog) {
 // arguments: sock is the file descriptor of the socket on which to
 // accept connections, as returned by listen_on_ipv4_socket.
 // connection is an array of size 4 in which the binary address of the
-// connecting client will be placed
+// connecting client will be placed in network byte order, or NULL.
 
 // return value: file descriptor for the connection on success, -1 on
 // failure
-int accept_ipv4_connection(int sock, uint32_t* connection) {
+int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
 
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
@@ -263,18 +295,19 @@ int accept_ipv4_connection(int sock, uint32_t* connection) {
     return -1;
   }
   if (connect_sock == -1) return -1;
-  memcpy(connection, &addr.sin_addr.s_addr, sizeof(uint32_t));
+  if (connection) memcpy(connection, &addr.sin_addr.s_addr, sizeof(uint32_t));
   return connect_sock;
 }
 
 // arguments: sock is the file descriptor of the socket on which to
 // accept connections, as returned by listen_on_ipv6_socket.
 // connection is an array of size 16 in which the binary address of
-// the connecting client will be placed
+// the connecting client will be placed in network byte order, or
+// NULL.
 
 // return value: file descriptor for the connection on success, -1 on
 // failure
-int accept_ipv6_connection(int sock, uint8_t* connection) {
+int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
 
   struct sockaddr_in6 addr;
   memset(&addr, 0, sizeof(addr));
@@ -297,11 +330,11 @@ int accept_ipv6_connection(int sock, uint8_t* connection) {
     return -1;
   }
   if (connect_sock == -1) return -1;
-  memcpy(connection, &addr.sin6_addr.s6_addr, sizeof(addr.sin6_addr.s6_addr));
+  if (connection) memcpy(connection, &addr.sin6_addr.s6_addr, sizeof(addr.sin6_addr.s6_addr));
   return connect_sock;
 }
 
-int shutdown_(int fd, int how) {
+int ss_shutdown_(int fd, int how) {
   switch (how) {
   case 0:
     return (shutdown(fd, SHUT_RD) == 0);
@@ -314,19 +347,6 @@ int shutdown_(int fd, int how) {
   }
 }
 
-int close_fd(int fd) {
+int ss_close_fd(int fd) {
   return (close(fd) == 0);
 }
-
-// just hand of to Unix read, to avoid having to load libc in
-// sockets.ss
-int c_read(int fd, void* buf, size_t n) {
-  return read(fd, buf, n);
-}
-
-// just hand of to Unix write, to avoid having to load libc in
-// sockets.ss
-int c_write(int fd, const void* buf, size_t n) {
-  return write(fd, buf, n);
-}
-

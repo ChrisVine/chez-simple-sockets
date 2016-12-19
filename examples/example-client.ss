@@ -1,4 +1,4 @@
-#!/usr/bin/scheme --script
+#!/usr/bin/env scheme-script
 
 ;; Copyright (C) 2016 Chris Vine
 ;; 
@@ -73,8 +73,8 @@
 
 (a-sync
  (lambda (await resume)
-   ;; getaddrinfo in particular can block, so call it up with
-   ;; either await-task-in-thread! or await-task-in-event-loop!
+   ;; getaddrinfo can block, so call it up with either
+   ;; await-task-in-thread! or await-task-in-event-loop!
    (let* ([socket (await-task-in-thread! await resume
 					(lambda ()
 					  (connect-to-ipv4-host check-ip "http" 0)))]
@@ -84,6 +84,7 @@
        (display body)
        (newline))
      (event-loop-block! #f)
+     ;; we must call clear-input-port before applying close-port
      (clear-input-port)
      (close-port sockport))))
 
