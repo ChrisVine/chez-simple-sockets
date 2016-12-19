@@ -46,7 +46,7 @@ procedures:
 
 `(connect-to-ipv4-host address service port)`
 
-This will connect to a remote ipv4 host.  If 'port' is greater than 0,
+This will connect to a remote IPv4 host.  If 'port' is greater than 0,
 it is set as the port to which the connection will be made, otherwise
 this is deduced from the 'service' argument, which should be a string
 such as "html".  The 'service' argument may be #f, in which case a
@@ -65,7 +65,7 @@ socket.
 ***
 `(connect-to-ipv6-host address service port)`
 
-This will connect to a remote ipv6 host.  If 'port' is greater than 0,
+This will connect to a remote IPv6 host.  If 'port' is greater than 0,
 it is set as the port to which the connection will be made, otherwise
 this is deduced from the 'service' argument, which should be a string
 such as "html".  The 'service' argument may be #f, in which case a
@@ -98,7 +98,7 @@ socket.
 ***
 `(listen-on-ipv6-socket local port backlog)`
 
-This constructs a listening IPv4 server socket.  If 'local' is true,
+This constructs a listening IPv6 server socket.  If 'local' is true,
 the socket will only bind on localhost.  If false, it will bind on any
 interface.  'port' is the port to listen on.  'backlog' is the maximum
 number of queueing connections provided by the socket.
@@ -177,32 +177,32 @@ if it succeeds (including if it does nothing because the descriptor is
 already blocking), otherwise #f.
 
 ***
-`(connect-condition? cond)
+`(connect-condition? cond)`
 
 This procedure returns #t if the condition object 'cond' is a
 &connection-condition object, otherwise #f.
 
 ***
-`(listen-condition? cond)
+`(listen-condition? cond)`
 
 This procedure returns #t if the condition object 'cond' is a
 &listen-condition object, otherwise #f.
 
 ***
-`(accept-condition? cond)
+`(accept-condition? cond)`
 
 This procedure returns #t if the condition object 'cond' is an
 &accept-condition object, otherwise #f.
 
 ***
-`(shutdown fd how)
+`(shutdown fd how)`
 
 This procedure shuts down a socket.  'fd' is the socket's file
 descriptor.  'how' is a symbol which can be 'rd, 'wr, or 'rdwr.  This
 procedure returns #t on success and #f on failure.
 
 ***
-`(close-fd fd)
+`(close-fd fd)`
 
 This closes a file descriptor.  It returns #t on success and #f on
 failure.  This procedure should only be used with file descriptors
