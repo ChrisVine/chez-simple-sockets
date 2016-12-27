@@ -83,7 +83,8 @@
 ;; byte order, or #f.
 
 ;; return value: file descriptor for the connection on success, -1 on
-;; failure
+;; failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
+;; socket
 (define accept-ipv4-connection-impl (foreign-procedure "ss_accept_ipv4_connection_impl"
 						       (int u32*)
 						       int))
@@ -97,7 +98,8 @@
 ;; byte order, or #f.
 
 ;; return value: file descriptor for the connection on success, -1 on
-;; failure
+;; failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
+;; socket
 (define accept-ipv6-connection-impl (foreign-procedure "ss_accept_ipv6_connection_impl"
 						       (int u8*)
 						       int))
@@ -150,4 +152,5 @@
     [(-1) (raise (condition (make-accept-condition)
 			    (make-who-condition "check-raise-accept-exception")
 			    (make-message-condition "Unable to accept connection on socket")))]
+    [(-2) 'eagain]
     [else sock]))

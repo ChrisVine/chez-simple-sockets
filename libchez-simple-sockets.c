@@ -271,7 +271,8 @@ int ss_listen_on_ipv6_socket_impl(int local, unsigned short port, int backlog) {
 // connecting client will be placed in network byte order, or NULL.
 
 // return value: file descriptor for the connection on success, -1 on
-// failure
+// failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
+// socket
 int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
 
   struct sockaddr_in addr;
@@ -287,6 +288,7 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
     connect_sock = accept(sock, (struct sockaddr*)&addr, &addr_len);
   } while (connect_sock == -1 && errno == EINTR);
 
+  int err = errno;
   Sactivate_thread();
   Sunlock_object((void*)connection);
 
@@ -294,7 +296,11 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
     close(connect_sock);
     return -1;
   }
-  if (connect_sock == -1) return -1;
+  if (connect_sock == -1) {
+    if (err == EAGAIN || err == EWOULDBLOCK)
+      return -2;
+    return -1;
+  }
   if (connection) memcpy(connection, &addr.sin_addr.s_addr, sizeof(uint32_t));
   return connect_sock;
 }
@@ -306,7 +312,8 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
 // NULL.
 
 // return value: file descriptor for the connection on success, -1 on
-// failure
+// failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
+// socket
 int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
 
   struct sockaddr_in6 addr;
@@ -322,6 +329,7 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
     connect_sock = accept(sock, (struct sockaddr*)&addr, &addr_len);
   } while (connect_sock == -1 && errno == EINTR);
 
+  int err = errno;
   Sactivate_thread();
   Sunlock_object((void*)connection);
 
@@ -329,7 +337,11 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
     close(connect_sock);
     return -1;
   }
-  if (connect_sock == -1) return -1;
+  if (connect_sock == -1) {
+    if (err == EAGAIN || err == EWOULDBLOCK)
+      return -2;
+    return -1;
+  }
   if (connection) memcpy(connection, &addr.sin6_addr.s6_addr, sizeof(addr.sin6_addr.s6_addr));
   return connect_sock;
 }

@@ -133,7 +133,8 @@
 ;; &accept-exception will be raised if connection attempts fail, to
 ;; which applying accept-exception? will return #t.
 ;;
-;; return value: file descriptor for the connection socket.
+;; return value: file descriptor for the connection socket or 'eagain
+;; if EAGAIN or EWOULDBLOCK encountered on non-blocking socket.
 (define (accept-ipv4-connection sock connection)
   (check-raise-accept-exception
    (accept-ipv4-connection-impl sock connection)))
@@ -149,7 +150,8 @@
 ;; &accept-exception will be raised if connection attempts fail, to
 ;; which applying accept-exception? will return #t.
 ;;
-;; return value: file descriptor for the connection socket.
+;; return value: file descriptor for the connection socket or 'eagain
+;; if EAGAIN or EWOULDBLOCK encountered on non-blocking socket.
 (define (accept-ipv6-connection sock connection)
   (check-raise-accept-exception
    (accept-ipv6-connection-impl sock connection)))

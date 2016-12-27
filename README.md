@@ -120,11 +120,13 @@ connections, as returned by listen-on-ipv4-socket.  'connection' is a
 bytevector of size 4 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
 be placed in network byte order, or #f.  &accept-exception will be
-raised if connection attempts fail, to which applying
-accept-exception?  will return #t.
+raised if connection attempts fail for any other reason than that
+EAGAIN or EWOULDBLOCK was encountered on a non-blocking socket, to
+which applying accept-exception? will return #t.
 
 On success, this procedure returns the file descriptor for the
-connection socket.
+connection socket or 'eagain if EAGAIN or EWOULDBLOCK was encountered
+on a non-blocking socket.
 
 ***
 `(accept-ipv6-connection sock connection)`
@@ -137,11 +139,13 @@ connections, as returned by listen-on-ipv6-socket.  'connection' is a
 bytevector of size 16 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
 be placed in network byte order, or #f.  &accept-exception will be
-raised if connection attempts fail, to which applying
-accept-exception?  will return #t.
+raised if connection attempts fail for any other reason than that
+EAGAIN or EWOULDBLOCK was encountered on a non-blocking socket, to
+which applying accept-exception? will return #t.
 
 On success, this procedure returns the file descriptor for the
-connection socket.
+connection socket or 'eagain if EAGAIN or EWOULDBLOCK was encountered
+on a non-blocking socket.
 
 ***
 `(ipv4-address->string addr)`

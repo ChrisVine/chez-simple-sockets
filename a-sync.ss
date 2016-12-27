@@ -167,16 +167,20 @@
      (await-accept-ipv4-connection! await resume #f sock connection)]
     [(await resume loop sock connection)
      (set-fd-non-blocking sock)
-     (event-loop-add-read-watch! sock
-				 (lambda (status)
-				   (resume)
-				   #t)
-				 loop)
-     (await)
-     (event-loop-remove-read-watch! sock loop)
-     (let ([con-fd (accept-ipv4-connection sock connection)])
-       (set-fd-non-blocking con-fd)
-       con-fd)]))
+     (let lp ([con-fd (accept-ipv4-connection sock connection)])
+       (if (eq? con-fd 'eagain)
+	   (begin
+	     (event-loop-add-read-watch! sock
+					 (lambda (status)
+					   (resume)
+					   #t)
+					 loop)
+	     (await)
+	     (event-loop-remove-read-watch! sock loop)
+	     (lp (accept-ipv4-connection sock connection)))
+	   (begin
+	     (set-fd-non-blocking con-fd)
+	     con-fd)))]))
        
 ;; This procedure will accept incoming connections on a listening IPv6
 ;; socket.
@@ -209,16 +213,20 @@
      (await-accept-ipv6-connection! await resume #f sock connection)]
     [(await resume loop sock connection)
      (set-fd-non-blocking sock)
-     (event-loop-add-read-watch! sock
-				 (lambda (status)
-				   (resume)
-				   #t)
-				 loop)
-     (await)
-     (event-loop-remove-read-watch! sock loop)
-     (let ([con-fd (accept-ipv6-connection sock connection)])
-       (set-fd-non-blocking con-fd)
-       con-fd)]))
+     (let lp ([con-fd (accept-ipv6-connection sock connection)])
+       (if (eq? con-fd 'eagain)
+	   (begin
+	     (event-loop-add-read-watch! sock
+					 (lambda (status)
+					   (resume)
+					   #t)
+					 loop)
+	     (await)
+	     (event-loop-remove-read-watch! sock loop)
+	     (lp (accept-ipv6-connection sock connection)))
+	   (begin
+	     (set-fd-non-blocking con-fd)
+	     con-fd)))]))
 
 ) ;; library
 
