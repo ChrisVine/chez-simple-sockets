@@ -309,7 +309,7 @@ waiting.  This procedure is intended to be called within a waitable
 procedure invoked by a-sync (which supplies the 'await' and 'resume'
 arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
-#f is passed), on the default event loop.
+\#f is passed), on the default event loop.
 
 &accept-exception will be raised if connection attempts fail, to which
 applying accept-exception? will return #t.
@@ -338,7 +338,7 @@ waiting.  This procedure is intended to be called within a waitable
 procedure invoked by a-sync (which supplies the 'await' and 'resume'
 arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
-#f is passed), on the default event loop.
+\#f is passed), on the default event loop.
 
 &accept-exception will be raised if connection attempts fail, to which
 applying accept-exception? will return #t.
