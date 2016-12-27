@@ -14,7 +14,7 @@
 
 
 
-;; signature: (connect-to-ipv4-host address service port blocking)
+;; signature: (connect-to-ipv4-host-impl address service port blocking)
 
 ;; arguments: if port is greater than 0, it is set as the port to
 ;; which the connection will be made, otherwise this is deduced from
@@ -30,7 +30,7 @@
 						     (string string unsigned-short boolean)
 						     int))
 
-;; signature: (connect-to-ipv6-host address service port blocking)
+;; signature: (connect-to-ipv6-host-impl address service port blocking)
 
 ;; arguments: if port is greater than 0, it is set as the port to
 ;; which the connection will be made, otherwise this is deduced from
@@ -46,7 +46,7 @@
 						     (string string unsigned-short boolean)
 						     int))
 
-;; signature: (listen-on-ipv4-socket local port backlog)
+;; signature: (listen-on-ipv4-socket-impl local port backlog)
 
 ;; arguments: if local is true, the socket will only bind on
 ;; localhost.  If false, it will bind on any interface.  port is the
@@ -60,7 +60,7 @@
 						      (boolean unsigned-short int)
 						      int))
 
-;; signature: (listen-on-ipv6-socket local port backlog)
+;; signature: (listen-on-ipv6-socket-impl local port backlog)
 
 ;; arguments: if local is true, the socket will only bind on
 ;; localhost.  If false, it will bind on any interface.  port is the
@@ -74,7 +74,7 @@
 						      (boolean unsigned-short int)
 						      int))
 
-;; signature: (accept-ipv4-connection sock connection)
+;; signature: (accept-ipv4-connection-impl sock connection)
 
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen_on_ipv4_socket.
@@ -88,7 +88,7 @@
 						       (int u32*)
 						       int))
 
-;; signature: (accept-ipv6-connection sock connection)
+;; signature: (accept-ipv6-connection-impl sock connection)
 
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen_on_ipv4_socket.

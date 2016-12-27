@@ -239,10 +239,11 @@ network address which can be looked up from a local file such as
 call connect-to-ipv4-host via await-task-in-thread! or
 await-task-in-event-loop!.
 
-This procedure is intended to be called in a waitable procedure
-invoked by a-sync. The 'loop' argument is optional: this procedure
-operates on the event loop passed in as an argument, or if none is
-passed (or #f is passed), on the default event loop.
+This procedure is intended to be called within a waitable procedure
+invoked by a-sync (which supplies the 'await' and 'resume' arguments).
+The 'loop' argument is optional: this procedure operates on the event
+loop passed in as an argument, or if none is passed (or #f is passed),
+on the default event loop.
 
 &connect-exception will be raised if the connection attempt fails, to
 which applying connect-exception? will return #t.
@@ -274,10 +275,11 @@ network address which can be looked up from a local file such as
 connect-to-ipv6-host via await-task-in-thread! or
 await-task-in-event-loop!.
 
-This procedure is intended to be called in a waitable procedure
-invoked by a-sync. The 'loop' argument is optional: this procedure
-operates on the event loop passed in as an argument, or if none is
-passed (or #f is passed), on the default event loop.
+This procedure is intended to be called within a waitable procedure
+invoked by a-sync (which supplies the 'await' and 'resume' arguments).
+The 'loop' argument is optional: this procedure operates on the event
+loop passed in as an argument, or if none is passed (or #f is passed),
+on the default event loop.
 
 &connect-exception will be raised if the connection attempt fails, to
 which applying connect-exception? will return #t.
@@ -299,10 +301,11 @@ be placed in network byte order, or #f.
 
 This procedure will only return when a connection has been accepted.
 However, the event loop will not be blocked by this procedure while
-waiting.  This procedure is intended to be called in a waitable
-procedure invoked by a-sync. The 'loop' argument is optional: this
-procedure operates on the event loop passed in as an argument, or if
-none is passed (or #f is passed), on the default event loop.
+waiting.  This procedure is intended to be called within a waitable
+procedure invoked by a-sync (which supplies the 'await' and 'resume'
+arguments).  The 'loop' argument is optional: this procedure operates
+on the event loop passed in as an argument, or if none is passed (or
+#f is passed), on the default event loop.
 
 &accept-exception will be raised if connection attempts fail, to which
 applying accept-exception? will return #t.
@@ -327,10 +330,11 @@ be placed in network byte order, or #f.
 
 This procedure will only return when a connection has been accepted.
 However, the event loop will not be blocked by this procedure while
-waiting.  This procedure is intended to be called in a waitable
-procedure invoked by a-sync. The 'loop' argument is optional: this
-procedure operates on the event loop passed in as an argument, or if
-none is passed (or #f is passed), on the default event loop.
+waiting.  This procedure is intended to be called within a waitable
+procedure invoked by a-sync (which supplies the 'await' and 'resume'
+arguments).  The 'loop' argument is optional: this procedure operates
+on the event loop passed in as an argument, or if none is passed (or
+#f is passed), on the default event loop.
 
 &accept-exception will be raised if connection attempts fail, to which
 applying accept-exception? will return #t.
