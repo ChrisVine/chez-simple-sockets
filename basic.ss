@@ -123,7 +123,7 @@
    local))
 
 ;; This procedure will accept incoming connections on a listening IPv4
-;; socket.
+;; socket.  It will block until a connection is made.
 ;;
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen-on-ipv4-socket.
@@ -133,14 +133,18 @@
 ;; &accept-exception will be raised if connection attempts fail, to
 ;; which applying accept-exception? will return #t.
 ;;
-;; return value: file descriptor for the connection socket or 'eagain
-;; if EAGAIN or EWOULDBLOCK encountered on non-blocking socket.
+;; If 'sock' is not a blocking descriptor, it will be made blocking by
+;; this procedure.
+;;
+;; return value: file descriptor for the connection socket.  That file
+;; descriptor will be blocking.
 (define (accept-ipv4-connection sock connection)
+  (set-fd-blocking sock)
   (check-raise-accept-exception
    (accept-ipv4-connection-impl sock connection)))
 
 ;; This procedure will accept incoming connections on a listening IPv6
-;; socket.
+;; socket.  It will block until a connection is made.
 ;;
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen-on-ipv6-socket.
@@ -150,9 +154,13 @@
 ;; &accept-exception will be raised if connection attempts fail, to
 ;; which applying accept-exception? will return #t.
 ;;
-;; return value: file descriptor for the connection socket or 'eagain
-;; if EAGAIN or EWOULDBLOCK encountered on non-blocking socket.
+;; If 'sock' is not a blocking descriptor, it will be made blocking by
+;; this procedure.
+;;
+;; return value: file descriptor for the connection socket.  That file
+;; descriptor will be blocking.
 (define (accept-ipv6-connection sock connection)
+  (set-fd-blocking sock)
   (check-raise-accept-exception
    (accept-ipv6-connection-impl sock connection)))
 

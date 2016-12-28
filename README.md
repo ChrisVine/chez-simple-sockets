@@ -113,39 +113,41 @@ socket.
 `(accept-ipv4-connection sock connection)`
 
 This procedure will accept incoming connections on a listening IPv4
-socket.
+socket.  It will block until a connection is made.
 
 'sock' is the file descriptor of the socket on which to accept
 connections, as returned by listen-on-ipv4-socket.  'connection' is a
 bytevector of size 4 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
 be placed in network byte order, or #f.  &accept-exception will be
-raised if connection attempts fail for any other reason than that
-EAGAIN or EWOULDBLOCK was encountered on a non-blocking socket, to
-which applying accept-exception? will return #t.
+raised if connection attempts fail, to which applying
+accept-exception? will return #t.
+
+If 'sock' is not a blocking descriptor, it will be made blocking by
+this procedure.
 
 On success, this procedure returns the file descriptor for the
-connection socket or 'eagain if EAGAIN or EWOULDBLOCK was encountered
-on a non-blocking socket.
+connection socket.  That file descriptor will be blocking.
 
 ***
 `(accept-ipv6-connection sock connection)`
 
 This procedure will accept incoming connections on a listening IPv6
-socket.
+socket.  It will block until a connection is made.
 
 'sock' is the file descriptor of the socket on which to accept
 connections, as returned by listen-on-ipv6-socket.  'connection' is a
 bytevector of size 16 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
 be placed in network byte order, or #f.  &accept-exception will be
-raised if connection attempts fail for any other reason than that
-EAGAIN or EWOULDBLOCK was encountered on a non-blocking socket, to
-which applying accept-exception? will return #t.
+raised if connection attempts fail, to which applying
+accept-exception? will return #t.
+
+If 'sock' is not a blocking descriptor, it will be made blocking by
+this procedure.
 
 On success, this procedure returns the file descriptor for the
-connection socket or 'eagain if EAGAIN or EWOULDBLOCK was encountered
-on a non-blocking socket.
+connection socket.  That file descriptor will be blocking.
 
 ***
 `(ipv4-address->string addr)`
@@ -318,7 +320,7 @@ If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
 
 On success, this procedure returns the file descriptor for the
-connection socket.  The file descriptor will be set non-blocking.
+connection socket.  That file descriptor will be set non-blocking.
 
 ***
 `(await-accept-ipv6-connection! await resume [loop] sock connection)`
@@ -347,4 +349,4 @@ If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
 
 On success, this procedure returns the file descriptor for the
-connection socket.  The file descriptor will be set non-blocking.
+connection socket.  That file descriptor will be set non-blocking.

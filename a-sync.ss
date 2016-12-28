@@ -160,14 +160,15 @@
 ;; non-blocking by this procedure.
 ;;
 ;; On success, this procedure returns the file descriptor for the
-;; connection socket.  The file descriptor will be set non-blocking.
+;; connection socket.  That file descriptor will be set non-blocking.
 (define await-accept-ipv4-connection!
   (case-lambda
     [(await resume sock connection)
      (await-accept-ipv4-connection! await resume #f sock connection)]
     [(await resume loop sock connection)
      (set-fd-non-blocking sock)
-     (let lp ([con-fd (accept-ipv4-connection sock connection)])
+     (let lp ([con-fd (check-raise-accept-exception
+		       (accept-ipv4-connection-impl sock connection))])
        (if (eq? con-fd 'eagain)
 	   (begin
 	     (event-loop-add-read-watch! sock
@@ -177,7 +178,8 @@
 					 loop)
 	     (await)
 	     (event-loop-remove-read-watch! sock loop)
-	     (lp (accept-ipv4-connection sock connection)))
+	     (lp (check-raise-accept-exception
+		  (accept-ipv4-connection-impl sock connection))))
 	   (begin
 	     (set-fd-non-blocking con-fd)
 	     con-fd)))]))
@@ -206,14 +208,15 @@
 ;; non-blocking by this procedure.
 ;;
 ;; On success, this procedure returns the file descriptor for the
-;; connection socket.  The file descriptor will be set non-blocking.
+;; connection socket.  That file descriptor will be set non-blocking.
 (define await-accept-ipv6-connection!
   (case-lambda
     [(await resume sock connection)
      (await-accept-ipv6-connection! await resume #f sock connection)]
     [(await resume loop sock connection)
      (set-fd-non-blocking sock)
-     (let lp ([con-fd (accept-ipv6-connection sock connection)])
+     (let lp ([con-fd (check-raise-accept-exception
+		       (accept-ipv6-connection-impl sock connection))])
        (if (eq? con-fd 'eagain)
 	   (begin
 	     (event-loop-add-read-watch! sock
@@ -223,7 +226,8 @@
 					 loop)
 	     (await)
 	     (event-loop-remove-read-watch! sock loop)
-	     (lp (accept-ipv6-connection sock connection)))
+	     (lp (check-raise-accept-exception
+		  (accept-ipv6-connection-impl sock connection))))
 	   (begin
 	     (set-fd-non-blocking con-fd)
 	     con-fd)))]))
