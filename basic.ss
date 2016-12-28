@@ -71,7 +71,8 @@
 ;; &connect-exception will be raised if the connection attempt fails,
 ;; to which applying connect-exception? will return #t.
 ;;
-;; return value: file descriptor of socket.
+;; return value: file descriptor of the socket.  The file descriptor
+;; will be blocking.
 (define (connect-to-ipv4-host address service port)
   (check-raise-connect-exception
    (connect-to-ipv4-host-impl address service port #t)
@@ -86,7 +87,8 @@
 ;; &connect-exception will be raised if the connection attempt fails,
 ;; to which applying connect-exception? will return #t.
 ;;
-;; return value: file descriptor of socket.
+;; return value: file descriptor of the socket.  The file descriptor
+;; will be blocking.
 (define (connect-to-ipv6-host address service port)
   (check-raise-connect-exception
    (connect-to-ipv6-host-impl address service port #t)

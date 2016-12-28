@@ -40,11 +40,13 @@ int ss_check_sock_error(int fd) {
 // arguments: if port is greater than 0, it is set as the port to
 // which the connection will be made, otherwise this is deduced from
 // the service argument.  The service argument may be NULL, in which
-// case a port number greater than 0 must be given.
+// case a port number greater than 0 must be given.  If 'blocking' is
+// false, the file descriptor is set non-blocking and this function
+// will return before the connection is made.
 
 // return value: file descriptor of socket, or -1 on failure to look
 // up address, -2 on failure to construct a socket, -3 on a failure to
-// connect
+// connect with blocking true.
 int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
 				 unsigned short port, int blocking) {
 
@@ -114,7 +116,9 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
 // arguments: if port is greater than 0, it is set as the port to
 // which the connection will be made, otherwise this is deduced from
 // the service argument.  The service argument may be NULL, in which
-// case a port number greater than 0 must be given.
+// case a port number greater than 0 must be given.  If 'blocking' is
+// false, the file descriptor is set non-blocking and this function
+// will return before the connection is made.
 
 // return value: file descriptor of socket, or -1 on failure to look
 // up address, -2 on failure to construct a socket, -3 on a failure to

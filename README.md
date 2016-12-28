@@ -60,7 +60,7 @@ dotted decimal address.
 which applying connect-exception? will return #t.
 
 On success, this procedure returns the file descriptor of a connection
-socket.
+socket.  The file descriptor will be blocking.
 
 ***
 `(connect-to-ipv6-host address service port)`
@@ -79,7 +79,7 @@ colonned IPv6 hex address.
 which applying connect-exception? will return #t.
 
 On success, this procedure returns the file descriptor of a connection
-socket.
+socket.  The file descriptor will be blocking.
 
 ***
 `(listen-on-ipv4-socket local port backlog)`
