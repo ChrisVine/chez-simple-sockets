@@ -28,6 +28,7 @@
    ipv6-address->string
    set-fd-non-blocking
    set-fd-blocking
+   set-ignore-sigpipe
    connect-condition?
    listen-condition?
    accept-condition?
@@ -61,6 +62,21 @@
 (define set-fd-blocking (foreign-procedure "ss_set_fd_blocking"
 					   (int)
 					   boolean))
+
+;; signature: (set-ignore-sigpipe)
+;;
+;; It is almost always a mistake not to ignore or otherwise deal with
+;; SIGPIPE in programs using sockets.  This procedure is a utility
+;; which if called will cause SIGPIPE to be ignored: instead any
+;; attempt to write to a socket which has been closed at the remote
+;; end will cause write/send to return with -1 and errno set to EPIPE.
+;; If something other than ignoring the signal is required, use Chez
+;; Scheme's register-signal-handler procedure.
+;;
+;; return value: true if it succeeded, otherwise false.
+(define set-ignore-sigpipe (foreign-procedure "ss_set_ignore_sigpipe"
+					      ()
+					      boolean))
 
 ;; This procedure makes a connection to a remote IPv4 host.
 ;;

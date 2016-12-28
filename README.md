@@ -183,6 +183,19 @@ if it succeeds (including if it does nothing because the descriptor is
 already blocking), otherwise #f.
 
 ***
+`(set-ignore-sigpipe)`
+
+It is almost always a mistake not to ignore or otherwise deal with
+SIGPIPE in programs using sockets.  This procedure is a utility which
+if called will cause SIGPIPE to be ignored: instead any attempt to
+write to a socket which has been closed at the remote end will cause
+write/send to return with -1 and errno set to EPIPE.  If something
+other than ignoring the signal is required, use Chez Scheme's
+register-signal-handler procedure.
+
+This procedure returns #t if it succeeds, otherwise #f.
+
+***
 `(connect-condition? cond)`
 
 This procedure returns #t if the condition object 'cond' is a

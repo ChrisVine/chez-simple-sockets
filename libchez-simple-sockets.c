@@ -9,6 +9,7 @@
 
 #include <string.h>       // for memset and memcpy
 #include <stdint.h>       // for uint8_t and uint32_t
+#include <signal.h>       // for sigaction
 #include <errno.h>
 
 // these are in the 'scheme' binary and can be statically linked
@@ -35,6 +36,20 @@ int ss_check_sock_error(int fd) {
   int len = sizeof(val);
   int res = getsockopt(fd, SOL_SOCKET, SO_ERROR, (void*)&val, (socklen_t*)&len);
   return val;
+}
+
+// It is almost always a mistake not to ignore or otherwise deal with
+// SIGPIPE in programs using sockets.  This function is a utility
+// which if called will cause SIGPIPE to be ignored: instead any
+// attempt to write to a socket which has been closed at the remote
+// end will cause write/send to return with -1 and errno set to EPIPE.
+int ss_set_ignore_sigpipe() {
+  struct sigaction sig_act_pipe;
+  sig_act_pipe.sa_handler = SIG_IGN;
+  // we don't need to mask off any signals
+  sigemptyset(&sig_act_pipe.sa_mask);
+  sig_act_pipe.sa_flags = 0;
+  return sigaction(SIGPIPE, &sig_act_pipe, 0) != -1;
 }
 
 // arguments: if port is greater than 0, it is set as the port to
