@@ -56,8 +56,8 @@ The 'address' argument should be a string which may be either the
 domain name of the server to which a connection is to be made or a
 dotted decimal address.
 
-&connect-exception will be raised if the connection attempt fails, to
-which applying connect-exception? will return #t.
+&connect-condition will be raised if the connection attempt fails, to
+which applying connect-condition? will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -75,8 +75,8 @@ The 'address' argument should be a string which may be either the
 domain name of the server to which a connection is to be made or a
 colonned IPv6 hex address.
 
-&connect-exception will be raised if the connection attempt fails, to
-which applying connect-exception? will return #t.
+&connect-condition will be raised if the connection attempt fails, to
+which applying connect-condition? will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -89,8 +89,8 @@ the socket will only bind on localhost.  If false, it will bind on any
 interface.  'port' is the port to listen on.  'backlog' is the maximum
 number of queueing connections provided by the socket.
 
-&listen-exception will be raised if the making of a listening socket
-fails, to which applying listen-exception? will return #t.
+&listen-condition will be raised if the making of a listening socket
+fails, to which applying listen-condition? will return #t.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -103,8 +103,8 @@ the socket will only bind on localhost.  If false, it will bind on any
 interface.  'port' is the port to listen on.  'backlog' is the maximum
 number of queueing connections provided by the socket.
 
-&listen-exception will be raised if the making of a listening socket
-fails, to which applying listen-exception? will return #t.
+&listen-condition will be raised if the making of a listening socket
+fails, to which applying listen-condition? will return #t.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -119,9 +119,9 @@ socket.  It will block until a connection is made.
 connections, as returned by listen-on-ipv4-socket.  'connection' is a
 bytevector of size 4 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
-be placed in network byte order, or #f.  &accept-exception will be
+be placed in network byte order, or #f.  &accept-condition will be
 raised if connection attempts fail, to which applying
-accept-exception? will return #t.
+accept-condition? will return #t.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -139,9 +139,9 @@ socket.  It will block until a connection is made.
 connections, as returned by listen-on-ipv6-socket.  'connection' is a
 bytevector of size 16 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
-be placed in network byte order, or #f.  &accept-exception will be
+be placed in network byte order, or #f.  &accept-condition will be
 raised if connection attempts fail, to which applying
-accept-exception? will return #t.
+accept-condition? will return #t.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -264,8 +264,8 @@ The 'loop' argument is optional: this procedure operates on the event
 loop passed in as an argument, or if none is passed (or #f is passed),
 on the default event loop.
 
-&connect-exception will be raised if the connection attempt fails, to
-which applying connect-exception? will return #t.
+&connect-condition will be raised if the connection attempt fails, to
+which applying connect-condition? will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -300,8 +300,8 @@ The 'loop' argument is optional: this procedure operates on the event
 loop passed in as an argument, or if none is passed (or #f is passed),
 on the default event loop.
 
-&connect-exception will be raised if the connection attempt fails, to
-which applying connect-exception? will return #t.
+&connect-condition will be raised if the connection attempt fails, to
+which applying connect-condition? will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -326,8 +326,8 @@ arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
 \#f is passed), on the default event loop.
 
-&accept-exception will be raised if connection attempts fail, to which
-applying accept-exception? will return #t.
+&accept-condition will be raised if connection attempts fail, to which
+applying accept-condition? will return #t.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
@@ -355,8 +355,8 @@ arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
 \#f is passed), on the default event loop.
 
-&accept-exception will be raised if connection attempts fail, to which
-applying accept-exception? will return #t.
+&accept-condition will be raised if connection attempts fail, to which
+applying accept-condition? will return #t.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
