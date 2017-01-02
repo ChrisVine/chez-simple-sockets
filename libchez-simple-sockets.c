@@ -299,7 +299,7 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
   socklen_t addr_len = sizeof(addr);
 
   // release the GC for accept() call
-  Slock_object((void*)connection);
+  if (connection) Slock_object((void*)connection);
   Sdeactivate_thread();
 
   int connect_sock;
@@ -309,7 +309,7 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
 
   int err = errno;
   Sactivate_thread();
-  Sunlock_object((void*)connection);
+  if (connection) Sunlock_object((void*)connection);
 
   if (addr_len > sizeof(addr)) {
     close(connect_sock);
@@ -340,7 +340,7 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
   socklen_t addr_len = sizeof(addr);
 
   // release the GC for accept() call
-  Slock_object((void*)connection);
+  if (connection) Slock_object((void*)connection);
   Sdeactivate_thread();
 
   int connect_sock;
@@ -350,7 +350,7 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
 
   int err = errno;
   Sactivate_thread();
-  Sunlock_object((void*)connection);
+  if (connection) Sunlock_object((void*)connection);
 
   if (addr_len > sizeof(addr)) {
     close(connect_sock);
