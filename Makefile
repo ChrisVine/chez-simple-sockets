@@ -11,7 +11,7 @@ all: $(TARGETS)
 .SUFFIXES: .c .so
 
 .c.so:
-	gcc -D_XOPEN_SOURCE=600 -std=c99 -fPIC -shared -o $@ $<
+	gcc -D_XOPEN_SOURCE=600 -std=c99 -O2 -fPIC -shared -o $@ $<
 
 install: all
 	install -d $(DESTDIR)$(CHEZDIR)/simple-sockets
