@@ -1,6 +1,7 @@
 ## -----------------------------
 CHEZDIR = /usr/lib/chez-scheme
-LIBDIR = /usr/lib64
+#LIBDIR = /usr/lib64
+LIBDIR = /usr/lib
 ## -----------------------------
 
 TARGETS = libchez-simple-sockets.so
