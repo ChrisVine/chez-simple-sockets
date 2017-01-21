@@ -228,6 +228,9 @@ int ss_listen_on_ipv4_socket_impl(int local, unsigned short port, int backlog) {
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1)
     return -2;
+  int optval = 1;
+  // we don't need to check the return value of setsockopt() here
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
   addr.sin_port = htons(port);
     
@@ -268,6 +271,9 @@ int ss_listen_on_ipv6_socket_impl(int local, unsigned short port, int backlog) {
   int sock = socket(AF_INET6, SOCK_STREAM, 0);
   if (sock == -1)
     return -2;
+  int optval = 1;
+  // we don't need to check the return value of setsockopt() here
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
   addr.sin6_port = htons(port);
     
