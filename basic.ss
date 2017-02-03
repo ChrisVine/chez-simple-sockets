@@ -19,7 +19,7 @@
 (library (simple-sockets basic)
   (export
    connect-to-ipv4-host
-   connect-to-ipv4-host
+   connect-to-ipv6-host
    listen-on-ipv4-socket
    listen-on-ipv6-socket
    accept-ipv4-connection
