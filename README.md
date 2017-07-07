@@ -255,8 +255,8 @@ the resolver offers to it.  These are important provisos which mean
 that this procedure should only be used where 'address' has a single
 network address which can be looked up from a local file such as
 /etc/host, or it is a string in IPv4 dotted decimal format.  Otherwise
-call connect-to-ipv4-host via await-task-in-thread! or
-await-task-in-event-loop!.
+call connect-to-ipv4-host via await-task-in-thread!,
+await-task-in-event-loop! or await-task-in-thread-pool!.
 
 This procedure is intended to be called within a waitable procedure
 invoked by a-sync (which supplies the 'await' and 'resume' arguments).
@@ -291,8 +291,8 @@ the resolver offers to it.  These are important provisos which mean
 that this procedure should only be used where 'address' has a single
 network address which can be looked up from a local file such as
 /etc/host, or it is a string in IPv6 hex format.  Otherwise call
-connect-to-ipv6-host via await-task-in-thread! or
-await-task-in-event-loop!.
+connect-to-ipv6-host via await-task-in-thread!,
+await-task-in-event-loop! or await-task-in-thread-pool!.
 
 This procedure is intended to be called within a waitable procedure
 invoked by a-sync (which supplies the 'await' and 'resume' arguments).
