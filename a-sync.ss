@@ -43,17 +43,16 @@
 ;; domain name of the server to which a connection is to be made or a
 ;; dotted decimal address.
 ;;
-;; If 'port' is a non-blocking port, the event loop will not be
-;; blocked by this procedure even if the connection is not immediately
-;; available, provided that the C getaddrinfo() function does not
-;; block.  In addition this procedure only attempts to connect to the
-;; first address the resolver offers to it.  These are important
-;; provisos which mean that this procedure should only be used where
-;; 'address' has a single network address which can be looked up from
-;; a local file such as /etc/host, or it is a string in IPv4 dotted
-;; decimal format.  Otherwise call connect-to-ipv4-host via
-;; await-task-in-thread!, await-task-in-event-loop! or
-;; await-task-in-thread-pool!.
+;; The event loop will not be blocked by this procedure even if the
+;; connection is not immediately available, provided that the C
+;; getaddrinfo() function does not block.  In addition this procedure
+;; only attempts to connect to the first address the resolver offers
+;; to it.  These are important provisos which mean that this procedure
+;; should only be used where 'address' has a single network address
+;; which can be looked up from a local file such as /etc/host, or it
+;; is a string in IPv4 dotted decimal format.  Otherwise call
+;; connect-to-ipv4-host via await-task-in-thread!,
+;; await-task-in-event-loop! or await-task-in-thread-pool!.
 ;;
 ;; This procedure is intended to be called in a waitable procedure
 ;; invoked by a-sync. The 'loop' argument is optional: this procedure
@@ -96,17 +95,16 @@
 ;; domain name of the server to which a connection is to be made or a
 ;; colonned IPv6 hex address.
 ;;
-;; If 'port' is a non-blocking port, the event loop will not be
-;; blocked by this procedure even if the connection is not immediately
-;; available, provided that the C getaddrinfo() function does not
-;; block.  In addition this procedure only attempts to connect to the
-;; first address the resolver offers to it.  These are important
-;; provisos which mean that this procedure should only be used where
-;; 'address' has a single network address which can be looked up from
-;; a local file such as /etc/host, or it is a string in IPv6 hex
-;; format.  Otherwise call connect-to-ipv6-host via
-;; await-task-in-thread!, await-task-in-event-loop! or
-;; await-task-in-thread-pool!.
+;; The event loop will not be blocked by this procedure even if the
+;; connection is not immediately available, provided that the C
+;; getaddrinfo() function does not block.  In addition this procedure
+;; only attempts to connect to the first address the resolver offers
+;; to it.  These are important provisos which mean that this procedure
+;; should only be used where 'address' has a single network address
+;; which can be looked up from a local file such as /etc/host, or it
+;; is a string in IPv6 hex format.  Otherwise call
+;; connect-to-ipv6-host via await-task-in-thread!,
+;; await-task-in-event-loop! or await-task-in-thread-pool!.
 ;;
 ;; This procedure is intended to be called in a waitable procedure
 ;; invoked by a-sync. The 'loop' argument is optional: this procedure
