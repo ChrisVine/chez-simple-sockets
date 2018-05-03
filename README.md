@@ -2,11 +2,11 @@ chez-simple-sockets
 ===================
 
 Chez-simple-sockets is a package for Chez Scheme containing some
-procedures for everyday use of IPv4 and IPv6 SOCK_STREAM sockets.  It
-does not purport to provide wide-ranging support for BSD sockets -
-just the procedures that casual users wanting to connect to remote
-hosts, or to run simple servers, might expect to use.  It is mainly
-intended as a support library for chez-a-sync at
+procedures for everyday use of IPv4, IPv6 and unix domain SOCK_STREAM
+sockets.  It does not purport to provide wide-ranging support for BSD
+sockets - just the procedures that users wanting to connect to remote
+hosts, or to run simple servers, might generally expect to use.  It is
+mainly intended as a support library for chez-a-sync at
 https://github.com/ChrisVine/chez-a-sync.
 
 The package has been designed to be thread-safe when blocking, so it
@@ -21,10 +21,10 @@ which makes the code considerably more portable).
 
 The package comes in two R6RS library files.  The (simple-sockets
 basic) library file provides for making synchronous connections to
-remote hosts and for accepting synchronous connections from remote
-hosts, and has various additional utility procedures.  The
-(simple-sockets a-sync) library file enables such connections to be
-handled asynchronously using the chez-a-sync library.
+remote and other hosts and for accepting synchronous connections from
+remote and other hosts, and has various additional utility procedures.
+The (simple-sockets a-sync) library file enables such connections to
+be handled asynchronously using the chez-a-sync library.
 
 How to install
 --------------
@@ -82,6 +82,20 @@ On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
 
 ***
+`(connect-to-unix-host pathname)`
+
+This will connect to a unix domain host.
+
+The 'pathname' argument should be a string comprising the filesystem
+name of the unix domain socket.
+
+&connect-condition will be raised if the connection attempt fails, to
+which applying connect-condition? will return #t.
+
+On success, this procedure returns the file descriptor of a connection
+socket.  The file descriptor will be blocking.
+
+***
 `(listen-on-ipv4-socket local port backlog)`
 
 This constructs a listening IPv4 server socket.  If 'local' is true,
@@ -102,6 +116,20 @@ This constructs a listening IPv6 server socket.  If 'local' is true,
 the socket will only bind on localhost.  If false, it will bind on any
 interface.  'port' is the port to listen on.  'backlog' is the maximum
 number of queueing connections provided by the socket.
+
+&listen-condition will be raised if the making of a listening socket
+fails, to which applying listen-condition? will return #t.
+
+On success, this procedure returns the file descriptor of the server
+socket.
+
+***
+`(listen-on-unix-socket pathname backlog)`
+
+This constructs a listening unix domain server socket.  'pathname' is
+a string comprising the filesystem name of the unix domain socket.
+'backlog' is the maximum number of queueing connections provided by
+the socket.
 
 &listen-condition will be raised if the making of a listening socket
 fails, to which applying listen-condition? will return #t.
@@ -141,6 +169,23 @@ bytevector of size 16 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
 be placed in network byte order, or #f.  &accept-condition will be
 raised if connection attempts fail, to which applying
+accept-condition? will return #t.
+
+If 'sock' is not a blocking descriptor, it will be made blocking by
+this procedure.
+
+On success, this procedure returns the file descriptor for the
+connection socket.  That file descriptor will be blocking.
+
+***
+`(accept-unix-connection sock)`
+
+This procedure will accept incoming connections on a listening unix
+domain socket.  It will block until a connection is made.
+
+'sock' is the file descriptor of the socket on which to accept
+connections, as returned by listen-on-unix-socket.  &accept-condition
+will be raised if connection attempts fail, to which applying
 accept-condition? will return #t.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
@@ -253,7 +298,7 @@ getaddrinfo() function does not block.  In addition this procedure
 only attempts to connect to the first address the resolver offers to
 it.  These are important provisos which mean that this procedure
 should only be used where 'address' has a single network address which
-can be looked up from a local file such as /etc/host, or it is a
+can be looked up from a local file such as /etc/hosts, or it is a
 string in IPv4 dotted decimal format.  Otherwise call
 connect-to-ipv4-host via await-task-in-thread!,
 await-task-in-event-loop! or await-task-in-thread-pool!.
@@ -289,10 +334,33 @@ getaddrinfo() function does not block.  In addition this procedure
 only attempts to connect to the first address the resolver offers to
 it.  These are important provisos which mean that this procedure
 should only be used where 'address' has a single network address which
-can be looked up from a local file such as /etc/host, or it is a
+can be looked up from a local file such as /etc/hosts, or it is a
 string in IPv6 hex format.  Otherwise call connect-to-ipv6-host via
 await-task-in-thread!, await-task-in-event-loop! or
 await-task-in-thread-pool!.
+
+This procedure is intended to be called within a waitable procedure
+invoked by a-sync (which supplies the 'await' and 'resume' arguments).
+The 'loop' argument is optional: this procedure operates on the event
+loop passed in as an argument, or if none is passed (or #f is passed),
+on the default event loop.
+
+&connect-condition will be raised if the connection attempt fails, to
+which applying connect-condition? will return #t.
+
+On success, this procedure returns the file descriptor of a connection
+socket.  The file descriptor will be set non-blocking.
+
+***
+`(await-connect-to-unix-host! accept resume [loop] pathname)`
+
+This will connect asynchronously to a unix domain host.
+
+The 'pathname' argument should be a string comprising the filesystem
+name of the unix domain socket.
+
+The event loop will not be blocked by this procedure even if the
+connection is not immediately available.
 
 This procedure is intended to be called within a waitable procedure
 invoked by a-sync (which supplies the 'await' and 'resume' arguments).
@@ -346,6 +414,32 @@ connections, as returned by listen-on-ipv6-socket.  'connection' is a
 bytevector of size 16 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
 be placed in network byte order, or #f.
+
+This procedure will only return when a connection has been accepted.
+However, the event loop will not be blocked by this procedure while
+waiting.  This procedure is intended to be called within a waitable
+procedure invoked by a-sync (which supplies the 'await' and 'resume'
+arguments).  The 'loop' argument is optional: this procedure operates
+on the event loop passed in as an argument, or if none is passed (or
+\#f is passed), on the default event loop.
+
+&accept-condition will be raised if connection attempts fail, to which
+applying accept-condition? will return #t.
+
+If 'sock' is not a non-blocking descriptor, it will be made
+non-blocking by this procedure.
+
+On success, this procedure returns the file descriptor for the
+connection socket.  That file descriptor will be set non-blocking.
+
+***
+`(await-accept-unix-connection! await resume [loop] sock)`
+
+This procedure will accept incoming connections on a listening unix
+domain socket asynchronously.
+
+'sock' is the file descriptor of the socket on which to accept
+connections, as returned by listen-on-unix-socket.
 
 This procedure will only return when a connection has been accepted.
 However, the event loop will not be blocked by this procedure while

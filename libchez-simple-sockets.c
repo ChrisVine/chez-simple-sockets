@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 and 2017 Chris Vine
+  Copyright (C) 2016 to 2018 Chris Vine
 
   This file is licensed under the Apache License, Version 2.0 (the
   "License"); you may not use this file except in compliance with the
@@ -14,16 +14,17 @@
   permissions and limitations under the License.
 */
 
-#include <unistd.h>       // for close and fcntl
+#include <unistd.h>       // for close, fcntl and unlink
 
 #include <sys/types.h>    // for socket, connect, getaddrinfo, accept and getsockopt
 #include <sys/socket.h>   // for socket, connect, getaddrinfo, accept, shutdown and getsockopt
+#include <sys/un.h>       // for sockaddr_un
 #include <netinet/in.h>   // for sockaddr_in and sockaddr_in6
 #include <arpa/inet.h>    // for htons and inet_pton
 #include <netdb.h>        // for getaddrinfo
 #include <fcntl.h>        // for fcntl
 
-#include <string.h>       // for memset and memcpy
+#include <string.h>       // for memset, memcpy, strlen and strcpy
 #include <stdint.h>       // for uint8_t and uint32_t
 #include <signal.h>       // for sigaction
 #include <errno.h>
@@ -220,6 +221,55 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
   return sock;
 }
 
+// arguments: if 'blocking' is false, the file descriptor is set
+// non-blocking and this function may return before the connection is
+// made.
+
+// return value: file descriptor of socket, or -1 if 'pathname' is too
+// long for the socket implementation, -2 on failure to construct a
+// socket, -3 on a failure to connect with blocking true.
+int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
+
+  struct sockaddr_un addr;
+  memset(&addr, 0, sizeof(addr));
+
+  // '>=' not '>' in order to accomodate final '\0' byte
+  if (strlen(pathname) >= sizeof(addr.sun_path))
+    return -1;
+  addr.sun_family = AF_UNIX;
+  strcpy(addr.sun_path, pathname);
+
+  // connect may show latency - release the GC
+  Sdeactivate_thread();
+
+  int err = 0;
+  int sock = socket(AF_UNIX, SOCK_STREAM, 0);
+
+  if (sock == -1) {
+    err = -2;
+  }
+  else if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+    close(sock);
+    err = -2;
+  }
+
+  if (!err) {
+    int res;
+    do {
+      res = connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
+    } while (res == -1 && errno == EINTR);
+    if (res == -1 && errno != EINPROGRESS) {
+      close(sock);
+      err = -3;
+    }
+  }
+
+  Sactivate_thread();
+
+  if (err) return err;
+  return sock;
+}
+
 // arguments: if local is true, the socket will only bind on
 // localhost.  If false, it will bind on any interface.  port is the
 // port to listen on.  backlog is the maximum number of queueing
@@ -292,6 +342,42 @@ int ss_listen_on_ipv6_socket_impl(int local, unsigned short port, int backlog) {
   setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
   addr.sin6_port = htons(port);
+    
+  if ((bind(sock, (struct sockaddr*)&addr, sizeof(addr))) == -1) {
+    close(sock);
+    return -3;
+  }
+
+  if ((listen(sock, backlog)) == -1) {
+    close(sock);
+    return -4;
+  }
+
+  return sock;
+}
+
+// arguments: backlog is the maximum number of queueing connections.
+
+// return value: file descriptor of socket, or -1 if 'pathname' is too
+// long for the socket implementation, -2 on failure to create a
+// socket, -3 on a failure to bind to the socket, and -4 on a failure
+// to listen on the socket
+int ss_listen_on_unix_socket_impl(const char* pathname, int backlog) {
+
+  struct sockaddr_un addr;
+  memset(&addr, 0, sizeof(addr));
+
+  // '>=' not '>' in order to accomodate final '\0' byte
+  if (strlen(pathname) >= sizeof(addr.sun_path))
+    return -1;
+  addr.sun_family = AF_UNIX;
+  strcpy(addr.sun_path, pathname);
+
+  unlink(pathname);
+
+  int sock = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sock == -1)
+    return -2;
     
   if ((bind(sock, (struct sockaddr*)&addr, sizeof(addr))) == -1) {
     close(sock);
@@ -384,6 +470,41 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
     return -1;
   }
   if (connection) memcpy(connection, &addr.sin6_addr.s6_addr, sizeof(addr.sin6_addr.s6_addr));
+  return connect_sock;
+}
+
+// argument: sock is the file descriptor of the socket on which to
+// accept connections, as returned by listen_on_unix_socket.
+
+// return value: file descriptor for the connection on success, -1 on
+// failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
+// socket
+int ss_accept_unix_connection_impl(int sock) {
+
+  struct sockaddr_un addr;
+  memset(&addr, 0, sizeof(addr));
+  socklen_t addr_len = sizeof(addr);
+
+  // release the GC for accept() call
+  Sdeactivate_thread();
+
+  int connect_sock;
+  do {
+    connect_sock = accept(sock, (struct sockaddr*)&addr, &addr_len);
+  } while (connect_sock == -1 && errno == EINTR);
+
+  int err = errno;
+  Sactivate_thread();
+
+  if (addr_len > sizeof(addr)) {
+    close(connect_sock);
+    return -1;
+  }
+  if (connect_sock == -1) {
+    if (err == EAGAIN || err == EWOULDBLOCK)
+      return -2;
+    return -1;
+  }
   return connect_sock;
 }
 

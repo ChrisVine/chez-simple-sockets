@@ -1,4 +1,4 @@
-;; Copyright (C) 2016 Chris Vine
+;; Copyright (C) 2016 and 2018 Chris Vine
 ;; 
 ;; This file is licensed under the Apache License, Version 2.0 (the
 ;; "License"); you may not use this file except in compliance with the
@@ -20,10 +20,13 @@
   (export
    connect-to-ipv4-host
    connect-to-ipv6-host
+   connect-to-unix-host
    listen-on-ipv4-socket
    listen-on-ipv6-socket
+   listen-on-unix-socket
    accept-ipv4-connection
    accept-ipv6-connection
+   accept-unix-connection
    ipv4-address->string
    ipv6-address->string
    set-fd-non-blocking
@@ -110,6 +113,19 @@
    (connect-to-ipv6-host-impl address service port #t)
    address))
 
+;; This procedure makes a connection to a unix domain host.
+;;
+;; arguments: pathname is the filesystem name of the unix domain
+;; socket.  &connect-exception will be raised if the connection
+;; attempt fails, to which applying connect-exception? will return #t.
+;;
+;; return value: file descriptor of the socket.  The file descriptor
+;; will be blocking.
+(define (connect-to-unix-host pathname)
+  (check-raise-connect-exception
+   (connect-to-unix-host-impl pathname #t)
+   pathname))
+
 ;; This procedure builds a listening IPv4 socket.
 ;;
 ;; arguments: if 'local' is true, the socket will only bind on
@@ -123,7 +139,7 @@
 (define (listen-on-ipv4-socket local port backlog)
   (check-raise-listen-exception
    (listen-on-ipv4-socket-impl local port backlog)
-   local))
+   (if local "localhost" "universal addresses")))
 
 ;; This procedure builds a listening IPv6 socket.
 ;;
@@ -138,7 +154,20 @@
 (define (listen-on-ipv6-socket local port backlog)
   (check-raise-listen-exception
    (listen-on-ipv6-socket-impl local port backlog)
-   local))
+   (if local "localhost" "universal addresses")))
+
+;; This procedure builds a listening unix domain socket.
+;;
+;; arguments: pathname is the filesystem name of the unix domain
+;; socket.  'backlog' is the maximum number of queueing connections.
+;; &listen-exception will be raised if the making of a listening
+;; socket fails, to which applying listen-exception? will return #t.
+;;
+;; return value: file descriptor of socket.
+(define (listen-on-unix-socket pathname backlog)
+  (check-raise-listen-exception
+   (listen-on-unix-socket-impl pathname backlog)
+   pathname))
 
 ;; This procedure will accept incoming connections on a listening IPv4
 ;; socket.  It will block until a connection is made.
@@ -181,6 +210,24 @@
   (set-fd-blocking sock)
   (check-raise-accept-exception
    (accept-ipv6-connection-impl sock connection)))
+
+;; This procedure will accept incoming connections on a listening unix
+;; domain socket.  It will block until a connection is made.
+;;
+;; arguments: sock is the file descriptor of the socket on which to
+;; accept connections, as returned by listen-on-unix-socket.
+;; &accept-exception will be raised if connection attempts fail, to
+;; which applying accept-exception? will return #t.
+;;
+;; If 'sock' is not a blocking descriptor, it will be made blocking by
+;; this procedure.
+;;
+;; return value: file descriptor for the connection socket.  That file
+;; descriptor will be blocking.
+(define (accept-unix-connection sock)
+  (set-fd-blocking sock)
+  (check-raise-accept-exception
+   (accept-unix-connection-impl sock)))
 
 ;; takes a bytevector of size 4 containing an IPv4 address in network
 ;; byte order, say as supplied as the 'connection' argument of

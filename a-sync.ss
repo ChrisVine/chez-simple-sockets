@@ -1,4 +1,4 @@
-;; Copyright (C) 2016 Chris Vine
+;; Copyright (C) 2016 and 2018 Chris Vine
 ;; 
 ;; This file is licensed under the Apache License, Version 2.0 (the
 ;; "License"); you may not use this file except in compliance with the
@@ -18,8 +18,10 @@
   (export
    await-connect-to-ipv4-host!
    await-connect-to-ipv6-host!
+   await-connect-to-unix-host!
    await-accept-ipv4-connection!
-   await-accept-ipv6-connection!)
+   await-accept-ipv6-connection!
+   await-accept-unix-connection!)
   (import 
    (a-sync event-loop)
    (except (simple-sockets basic) connect-condition? listen-condition? accept-condition?)
@@ -136,6 +138,44 @@
 		 (check-raise-connect-exception -3 address)))
 	   (check-raise-connect-exception sock address)))]))
 
+;; This will connect asynchronously to a unix domain host.
+;;
+;; The 'pathname' argument should be a string comprising the
+;; filesystem name of the unix domain socket.
+;;
+;; The event loop will not be blocked by this procedure even if the
+;; connection is not immediately available.
+;;
+;; This procedure is intended to be called in a waitable procedure
+;; invoked by a-sync. The 'loop' argument is optional: this procedure
+;; operates on the event loop passed in as an argument, or if none is
+;; passed (or #f is passed), on the default event loop.
+;;
+;; &connect-exception will be raised if the connection attempt fails,
+;; to which applying connect-exception? will return #t.
+;;
+;; On success, this procedure returns the file descriptor of a
+;; connection socket.  The file descriptor will be set non-blocking.
+(define await-connect-to-unix-host!
+  (case-lambda
+    [(await resume pathname)
+     (await-connect-to-unix-host! await resume #f pathname)]
+    [(await resume loop pathname)
+     (let ([sock (connect-to-unix-host-impl pathname #f)])
+       (if (>= sock 0)
+	   (begin
+	     (event-loop-add-write-watch! sock
+					  (lambda (status)
+					    (resume)
+					    #t)
+					  loop)
+	     (await)
+	     (event-loop-remove-write-watch! sock loop)
+	     (if (= 0 (check-sock-error sock))
+		 sock
+		 (check-raise-connect-exception -3 pathname)))
+	   (check-raise-connect-exception sock pathname)))]))
+
 ;; This procedure will accept incoming connections on a listening IPv4
 ;; socket asynchronously.
 ;;
@@ -232,6 +272,51 @@
 	     (set-fd-non-blocking con-fd)
 	     con-fd)))]))
 
+;; This procedure will accept incoming connections on a listening unix
+;; domain socket asynchronously.
+;;
+;; 'sock' is the file descriptor of the socket on which to accept
+;; connections, as returned by listen-on-unix-socket.
+;;
+;; This procedure will only return when a connection has been
+;; accepted.  However, the event loop will not be blocked by this
+;; procedure while waiting.  This procedure is intended to be called
+;; in a waitable procedure invoked by a-sync. The 'loop' argument is
+;; optional: this procedure operates on the event loop passed in as an
+;; argument, or if none is passed (or #f is passed), on the default
+;; event loop.
+;;
+;; &accept-exception will be raised if connection attempts fail, to
+;; which applying accept-exception? will return #t.
+;;
+;; If 'sock' is not a non-blocking descriptor, it will be made
+;; non-blocking by this procedure.
+;;
+;; On success, this procedure returns the file descriptor for the
+;; connection socket.  That file descriptor will be set non-blocking.
+(define await-accept-unix-connection!
+  (case-lambda
+    [(await resume sock)
+     (await-accept-unix-connection! await resume #f sock)]
+    [(await resume loop sock)
+     (set-fd-non-blocking sock)
+     (let lp ([con-fd (check-raise-accept-exception
+		       (accept-unix-connection-impl sock))])
+       (if (eq? con-fd 'eagain)
+	   (begin
+	     (event-loop-add-read-watch! sock
+					 (lambda (status)
+					   (resume)
+					   #t)
+					 loop)
+	     (await)
+	     (event-loop-remove-read-watch! sock loop)
+	     (lp (check-raise-accept-exception
+		  (accept-unix-connection-impl sock))))
+	   (begin
+	     (set-fd-non-blocking con-fd)
+	     con-fd)))]))
+       
 ) ;; library
 
 

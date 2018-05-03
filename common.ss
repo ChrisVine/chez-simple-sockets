@@ -1,4 +1,4 @@
-;; Copyright (C) 2016 Chris Vine
+;; Copyright (C) 2016 and 2018 Chris Vine
 ;; 
 ;; This file is licensed under the Apache License, Version 2.0 (the
 ;; "License"); you may not use this file except in compliance with the
@@ -46,6 +46,19 @@
 						     (string string unsigned-short boolean)
 						     int))
 
+;; signature: (connect-to-unix-host-impl pathname blocking)
+
+;; arguments: if 'blocking' is false, the file descriptor is set
+;; non-blocking and this function may return before the connection is
+;; made.
+
+;; return value: file descriptor of socket, or -1 if 'pathname' is too
+;; long for the socket implementation, -2 on failure to construct a
+;; socket, -3 on a failure to connect with blocking true.
+(define connect-to-unix-host-impl (foreign-procedure "ss_connect_to_unix_host_impl"
+						     (string boolean)
+						     int))
+
 ;; signature: (listen-on-ipv4-socket-impl local port backlog)
 
 ;; arguments: if local is true, the socket will only bind on
@@ -72,6 +85,18 @@
 ;; bind to the socket, and -4 on a failure to listen on the socket
 (define listen-on-ipv6-socket-impl (foreign-procedure "ss_listen_on_ipv6_socket_impl"
 						      (boolean unsigned-short int)
+						      int))
+
+;; signature: (listen-on-unix-socket-impl pathname backlog)
+
+;; arguments: backlog is the maximum number of queueing connections.
+
+;; return value: file descriptor of socket, or -1 if 'pathname' is too
+;; long for the socket implementation, -2 on failure to create a
+;; socket, -3 on a failure to bind to the socket, and -4 on a failure
+;; to listen on the socket
+(define listen-on-unix-socket-impl (foreign-procedure "ss_listen_on_unix_socket_impl"
+						      (string int)
 						      int))
 
 ;; signature: (accept-ipv4-connection-impl sock connection)
@@ -104,6 +129,17 @@
 						       (int u8*)
 						       int))
 
+;; signature: (accept-unix-connection-impl sock)
+
+;; arguments: sock is the file descriptor of the socket on which to
+;; accept connections, as returned by listen_on_unix_socket.
+
+;; return value: file descriptor for the connection on success, -1 on
+;; failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
+;; socket
+(define accept-unix-connection-impl (foreign-procedure "ss_accept_unix_connection_impl"
+						       (int)
+						       int))
 (define-condition-type
   &connect-condition &condition make-connect-condition connect-condition?)
 (define-condition-type
@@ -116,8 +152,9 @@
   (case sock
     [(-1) (raise (condition (make-connect-condition)
 			    (make-who-condition "check-raise-connect-exception")
-			    (make-message-condition (string-append "Unable to look up address for "
-								   addr))))]
+			    (make-message-condition (string-append addr 
+								   ": Unable to look up this address (IP socket) "
+								   "or address too long (UNIX socket)"))))]
     [(-2) (raise (condition (make-connect-condition)
 			    (make-who-condition "check-raise-connect-exception")
 			    (make-message-condition "Unable to construct socket")))]
@@ -127,20 +164,19 @@
 								   addr))))]
     [else sock]))
 
-(define (check-raise-listen-exception sock local)
+(define (check-raise-listen-exception sock addr)
   (case sock
     [(-1) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
-			    (make-message-condition "Unable to make address for localhost")))]
+			    (make-message-condition (string-append "Unable to make address for "
+								   addr))))]
     [(-2) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
 			    (make-message-condition "Unable to construct socket\n")))]
     [(-3) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
 			    (make-message-condition (string-append "Unable to bind to "
-								   (if local
-								       "localhost"
-								       "universal addresses")))))]
+								   addr))))]
     [(-4) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
 			    (make-message-condition "Unable to listen on socket")))]
