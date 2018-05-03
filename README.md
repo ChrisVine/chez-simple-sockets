@@ -297,14 +297,14 @@ the underlying file descriptor directly.  (This means that if the port
 has previously been used for writing using chez scheme's R6RS write
 procedures, the port must be flushed before this procedure is called;
 but the best thing with a socket is to carry out all writing to the
-port socket using this procedure or the write-string procedure, and
+socket port using this procedure or the write-string procedure, and
 all reading using R6RS read procedures, in which case all is good.
 This can be enforced by constructing the socket port with
-open-fd-input-port.)
+open-fd-input-port rather than open-fd-input/output-port.)
 
 One remaining point to watch out for is that clear-input-port must
-normally be called before a read/write port representing a socket is
-closed or otherwise flushed for output, otherwise the exception
+normally be called before an input/output port representing a socket
+is closed or otherwise flushed for output, otherwise the exception
 mentioned above might arise.
 
 'port' can be a binary port or a textual port.  However, this
