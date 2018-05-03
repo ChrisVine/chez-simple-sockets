@@ -273,6 +273,62 @@ failure.  This procedure should only be used with file descriptors
 which are not owned by a port - otherwise apply the close-port
 procedure to the port.
 
+***
+`(write-bytevector port bv)`
+
+In chez scheme, ports can be constructed from file descriptors using
+the open-fd-input-port, open-fd-output-port and
+open-fd-input/output-port procedures.  The last of those would be
+useful for sockets, except that chez scheme's port implementation has
+the infortunate feature that a port opened and used for both reading
+and writing via the port's buffers must be seekable (that is to say,
+its underlying file descriptor must have a file position pointer).
+For ports representing non-seekable read/write file descriptors such
+as sockets, this means that with any port other than a non-buffered
+binary port, an exception will arise if attempting to write to the
+port using R6RS procedures after it has previously been read from,
+unless an intervening call is made to clear-input-port between the
+last read and the first next write.
+
+As having buffering enabled on input ports is usually desirable, this
+procedure is designed to circumvent the problem mentioned above: it
+by-passes the port's output buffers entirely and sends the output to
+the underlying file descriptor directly.  (This means that if the port
+has previously been used for writing using chez scheme's R6RS write
+procedures, the port must be flushed before this procedure is called;
+but the best thing with a socket is to carry out all writing to the
+port socket using this procedure or the write-string procedure, and
+all reading using R6RS read procedures, in which case all is good.
+This can be enforced by constructing the socket port with
+open-fd-input-port.)
+
+One remaining point to watch out for is that clear-input-port must
+normally be called before a read/write port representing a socket is
+closed or otherwise flushed for output, otherwise the exception
+mentioned above might arise.
+
+'port' can be a binary port or a textual port.  However, this
+procedure will raise a &i/o-write-error exception if passed a port
+representing a regular file with a file position pointer.
+
+This procedure will return #t if the write succeeded, or #f if a local
+error arose.
+
+Do not use this procedure with a non-blocking socket: use
+chez-a-sync's await-put-bytevector! procedure instead.
+
+***
+`(write-string port text)`
+
+See the documentation on the write-bytevector procedure for more
+information about this procedure.  This procedure applies
+string->bytevector to 'text' using the transcoder associated with
+'port', and then applies write-bytevector to the result.  'port' must
+be a textual port.
+
+Do not use this procedure with a non-blocking socket: use
+chez-a-sync's await-put-string! procedure instead.
+
 
 (simple-sockets a-sync)
 ----------------------

@@ -14,9 +14,10 @@
   permissions and limitations under the License.
 */
 
-#include <unistd.h>       // for close, fcntl and unlink
+#include <unistd.h>       // for close, fcntl, unlink, write and ssize_t
 
 #include <sys/types.h>    // for socket, connect, getaddrinfo, accept and getsockopt
+#include <sys/stat.h>     // for fstat
 #include <sys/socket.h>   // for socket, connect, getaddrinfo, accept, shutdown and getsockopt
 #include <sys/un.h>       // for sockaddr_un
 #include <netinet/in.h>   // for sockaddr_in and sockaddr_in6
@@ -27,6 +28,7 @@
 #include <string.h>       // for memset, memcpy, strlen and strcpy
 #include <stdint.h>       // for uint8_t and uint32_t
 #include <signal.h>       // for sigaction
+#include <stddef.h>       // for size_t
 #include <errno.h>
 
 // these are in the 'scheme' binary and can be statically linked
@@ -523,4 +525,25 @@ int ss_shutdown_(int fd, int how) {
 
 int ss_close_fd(int fd) {
   return (close(fd) == 0);
+}
+
+int ss_write_bytevector(int fd, const char* buf, size_t count) {
+  ssize_t res;
+  do {
+    res = write(fd, buf, count);
+    if (res > 0) {
+      buf += res;
+      count -= res;
+    }
+  } while (count && (res != -1 || errno == EINTR));
+  return res != -1;
+}
+
+int ss_regular_file_p(int fd) {
+  struct stat buf;
+  if (fstat(fd, &buf) == -1)
+    return -1;
+  if (S_ISREG(buf.st_mode))
+    return 1;
+  return 0;
 }
