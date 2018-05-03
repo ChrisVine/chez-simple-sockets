@@ -547,3 +547,7 @@ int ss_regular_file_p(int fd) {
     return 1;
   return 0;
 }
+
+int ss_get_errno(void) {
+  return errno;
+}

@@ -329,6 +329,16 @@ be a textual port.
 Do not use this procedure with a non-blocking socket: use
 chez-a-sync's await-put-string! procedure instead.
 
+***
+`(get-errno)`
+
+This returns the current C errno value.  Its main purpose is to be
+called after write-bytevector or write-string has returned #f in order
+to determine the source of the failure to write.  For example, if
+errno is 32 then on BSDs and linux, EPIPE has arisen.  Call this
+procedure immediately after the failure has arisen or its value may be
+superceded by a newer error.
+
 
 (simple-sockets a-sync)
 ----------------------

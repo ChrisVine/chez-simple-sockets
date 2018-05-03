@@ -38,7 +38,8 @@
    shutdown
    close-fd
    write-bytevector
-   write-string)
+   write-string
+   get-errno)
   (import (chezscheme))
 
 
@@ -373,5 +374,15 @@
 ;; chez-a-sync's await-put-string! procedure instead.
 (define (write-string port text)
   (write-bytevector port (string->bytevector text (port-transcoder port))))
+
+;; This returns the current C errno value.  Its main purpose is to be
+;; called after write-bytevector or write-string has returned #f in
+;; order to determine the source of the failure to write.  For
+;; example, if errno is 32 then on BSDs and linux, EPIPE has arisen.
+;; Call this procedure immediately after the failure has arisen or its
+;; value may be superceded by a newer error.
+(define get-errno (foreign-procedure "ss_get_errno"
+				     ()
+				     int))
 
 ) ;; library
