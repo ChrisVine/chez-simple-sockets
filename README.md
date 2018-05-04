@@ -304,8 +304,9 @@ open-fd-input-port rather than open-fd-input/output-port.)
 
 One remaining point to watch out for is that clear-input-port must
 normally be called before an input/output port representing a socket
-is closed or otherwise flushed for output, otherwise the exception
-mentioned above might arise.
+(that is, one which has been constructed with
+open-fd-input/output-port) is closed or otherwise flushed for output,
+otherwise the exception mentioned above might arise.
 
 'port' can be a binary port or a textual port.  However, this
 procedure will raise a &i/o-write-error exception if passed a port
