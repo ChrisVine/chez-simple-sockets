@@ -161,16 +161,25 @@
 
 ;; This procedure builds a listening unix domain socket.
 ;;
-;; arguments: pathname is the filesystem name of the unix domain
+;; arguments: 'pathname' is the filesystem name of the unix domain
 ;; socket.  'backlog' is the maximum number of queueing connections.
+;; The 'error-on-existing' argument is optional: it it is set #t, any
+;; existing or stale socket or other file by the name of 'pathname'
+;; will cause a &listen exception to arise when the unix domain socket
+;; is bound.  If set #f, or the argument is not provided, then any
+;; prior existing socket will be deleted before binding.
 ;; &listen-exception will be raised if the making of a listening
 ;; socket fails, to which applying listen-exception? will return #t.
 ;;
 ;; return value: file descriptor of socket.
-(define (listen-on-unix-socket pathname backlog)
-  (check-raise-listen-exception
-   (listen-on-unix-socket-impl pathname backlog)
-   pathname))
+(define listen-on-unix-socket
+  (case-lambda
+    [(pathname backlog)
+     (listen-on-unix-socket pathname backlog #f)]
+    [(pathname backlog error-on-existing)
+     (check-raise-listen-exception
+      (listen-on-unix-socket-impl pathname backlog error-on-existing)
+      pathname)]))
 
 ;; This procedure will accept incoming connections on a listening IPv4
 ;; socket.  It will block until a connection is made.

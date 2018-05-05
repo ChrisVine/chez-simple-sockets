@@ -359,12 +359,16 @@ int ss_listen_on_ipv6_socket_impl(int local, unsigned short port, int backlog) {
 }
 
 // arguments: backlog is the maximum number of queueing connections.
+// If error_on_existing is true, any existing or stale socket or other
+// file by the name of pathname will cause an error to arise when the
+// unix domain socket is bound.  If false (the default), then any
+// prior existing socket will be deleted before binding.
 
 // return value: file descriptor of socket, or -1 if 'pathname' is too
 // long for the socket implementation, -2 on failure to create a
 // socket, -3 on a failure to bind to the socket, and -4 on a failure
 // to listen on the socket
-int ss_listen_on_unix_socket_impl(const char* pathname, int backlog) {
+int ss_listen_on_unix_socket_impl(const char* pathname, int backlog, int error_on_existing) {
 
   struct sockaddr_un addr;
   memset(&addr, 0, sizeof(addr));
@@ -375,7 +379,7 @@ int ss_listen_on_unix_socket_impl(const char* pathname, int backlog) {
   addr.sun_family = AF_UNIX;
   strcpy(addr.sun_path, pathname);
 
-  unlink(pathname);
+  if (!error_on_existing) unlink(pathname);
 
   int sock = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sock == -1)

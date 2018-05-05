@@ -87,16 +87,21 @@
 						      (boolean unsigned-short int)
 						      int))
 
-;; signature: (listen-on-unix-socket-impl pathname backlog)
+;; signature: (listen-on-unix-socket-impl pathname backlog error-on-existing)
 
 ;; arguments: backlog is the maximum number of queueing connections.
+;; If the error-on-existing argument is set #t, any existing or stale
+;; socket or other file by the name of pathname will cause an error to
+;; arise when the unix domain socket is bound.  If set #f (the
+;; default), then any prior existing socket will be deleted before
+;; binding.
 
 ;; return value: file descriptor of socket, or -1 if 'pathname' is too
 ;; long for the socket implementation, -2 on failure to create a
 ;; socket, -3 on a failure to bind to the socket, and -4 on a failure
 ;; to listen on the socket
 (define listen-on-unix-socket-impl (foreign-procedure "ss_listen_on_unix_socket_impl"
-						      (string int)
+						      (string int boolean)
 						      int))
 
 ;; signature: (accept-ipv4-connection-impl sock connection)

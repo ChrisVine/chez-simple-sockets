@@ -124,12 +124,16 @@ On success, this procedure returns the file descriptor of the server
 socket.
 
 ***
-`(listen-on-unix-socket pathname backlog)`
+`(listen-on-unix-socket pathname backlog [error-on-existing])`
 
 This constructs a listening unix domain server socket.  'pathname' is
 a string comprising the filesystem name of the unix domain socket.
 'backlog' is the maximum number of queueing connections provided by
-the socket.
+the socket.  The 'error-on-existing' argument is optional: it it is
+set #t, any existing or stale socket or other file by the name of
+'pathname' will cause a &listen exception to arise when the unix
+domain socket is bound.  If set #f, or the argument is not provided,
+then any prior existing socket will be deleted before binding.
 
 &listen-condition will be raised if the making of a listening socket
 fails, to which applying listen-condition? will return #t.
