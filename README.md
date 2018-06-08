@@ -96,12 +96,15 @@ On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
 
 ***
-`(listen-on-ipv4-socket local port backlog)`
+`(listen-on-ipv4-socket address port backlog)`
 
-This constructs a listening IPv4 server socket.  If 'local' is true,
-the socket will only bind on localhost.  If false, it will bind on any
-interface.  'port' is the port to listen on.  'backlog' is the maximum
-number of queueing connections provided by the socket.
+This constructs a listening IPv4 server socket.  'address' may be a
+string or a boolean value.  If it is a string, it must contain the
+address to bind the socket to in decimal dotted notation.  Otherwise,
+if 'address' is boolean #t, the socket will bind on localhost, and if
+\#f, it will bind on any interface.  'port' is the port to listen on.
+'backlog' is the maximum number of queueing connections provided by
+the socket.
 
 &listen-condition will be raised if the making of a listening socket
 fails, to which applying listen-condition? will return #t.
@@ -110,12 +113,15 @@ On success, this procedure returns the file descriptor of the server
 socket.
 
 ***
-`(listen-on-ipv6-socket local port backlog)`
+`(listen-on-ipv6-socket address port backlog)`
 
-This constructs a listening IPv6 server socket.  If 'local' is true,
-the socket will only bind on localhost.  If false, it will bind on any
-interface.  'port' is the port to listen on.  'backlog' is the maximum
-number of queueing connections provided by the socket.
+This constructs a listening IPv6 server socket.  'address' may be a
+string or a boolean value.  If it is a string, it must contain the
+address to bind the socket to in colonned hex notation.  Otherwise, if
+'address' is boolean #t, the socket will bind on localhost, and if #f,
+it will bind on any interface.  'port' is the port to listen on.
+'backlog' is the maximum number of queueing connections provided by
+the socket.
 
 &listen-condition will be raised if the making of a listening socket
 fails, to which applying listen-condition? will return #t.

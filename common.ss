@@ -13,6 +13,12 @@
 ;; permissions and limitations under the License.
 
 
+(define-condition-type
+  &connect-condition &condition make-connect-condition connect-condition?)
+(define-condition-type
+  &listen-condition &condition make-listen-condition listen-condition?)
+(define-condition-type
+  &accept-condition &condition make-accept-condition accept-condition?)
 
 ;; signature: (connect-to-ipv4-host-impl address service port blocking)
 
@@ -59,32 +65,32 @@
 						     (string boolean)
 						     int))
 
-;; signature: (listen-on-ipv4-socket-impl local port backlog)
+;; signature: (listen-on-ipv4-socket-impl address port backlog)
 
-;; arguments: if local is true, the socket will only bind on
-;; localhost.  If false, it will bind on any interface.  port is the
-;; port to listen on.  backlog is the maximum number of queueing
-;; connections.
+;; arguments: address must be a string in decimal dotted notation
+;; giving the address to bind the socket to, or #f.  If #f, the socket
+;; will bind on any interface.  port is the port to listen on.
+;; backlog is the maximum number of queueing connections.
 
 ;; return value: file descriptor of socket, or -1 on failure to make
 ;; an address, -2 on failure to create a socket, -3 on a failure to
 ;; bind to the socket, and -4 on a failure to listen on the socket
 (define listen-on-ipv4-socket-impl (foreign-procedure "ss_listen_on_ipv4_socket_impl"
-						      (boolean unsigned-short int)
+						      (string unsigned-short int)
 						      int))
 
-;; signature: (listen-on-ipv6-socket-impl local port backlog)
+;; signature: (listen-on-ipv6-socket-impl address port backlog)
 
-;; arguments: if local is true, the socket will only bind on
-;; localhost.  If false, it will bind on any interface.  port is the
-;; port to listen on.  backlog is the maximum number of queueing
-;; connections.
+;; arguments: address must be a string in colonned hex notation giving
+;; the address to bind the socket to, or #f.  If #f, the socket will
+;; bind on any interface.  port is the port to listen on.  backlog is
+;; the maximum number of queueing connections.
 
 ;; return value: file descriptor of socket, or -1 on failure to make
 ;; an address, -2 on failure to create a socket, -3 on a failure to
 ;; bind to the socket, and -4 on a failure to listen on the socket
 (define listen-on-ipv6-socket-impl (foreign-procedure "ss_listen_on_ipv6_socket_impl"
-						      (boolean unsigned-short int)
+						      (string unsigned-short int)
 						      int))
 
 ;; signature: (listen-on-unix-socket-impl pathname backlog error-on-existing)
@@ -145,13 +151,6 @@
 (define accept-unix-connection-impl (foreign-procedure "ss_accept_unix_connection_impl"
 						       (int)
 						       int))
-(define-condition-type
-  &connect-condition &condition make-connect-condition connect-condition?)
-(define-condition-type
-  &listen-condition &condition make-listen-condition listen-condition?)
-(define-condition-type
-  &accept-condition &condition make-accept-condition accept-condition?)
-
 
 (define (check-raise-connect-exception sock addr)
   (case sock

@@ -272,22 +272,22 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
   return sock;
 }
 
-// arguments: if local is true, the socket will only bind on
-// localhost.  If false, it will bind on any interface.  port is the
-// port to listen on.  backlog is the maximum number of queueing
-// connections.
+// arguments: address must be a string in decimal dotted notation
+// giving the address to bind the socket to.  If address is NULL, the
+// socket will bind on any interface.  port is the port to listen on.
+// backlog is the maximum number of queueing connections.
 
 // return value: file descriptor of socket, or -1 on failure to make
 // an address, -2 on failure to create a socket, -3 on a failure to
 // bind to the socket, and -4 on a failure to listen on the socket
-int ss_listen_on_ipv4_socket_impl(int local, unsigned short port, int backlog) {
+int ss_listen_on_ipv4_socket_impl(const char* address, unsigned short port, int backlog) {
 
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
 
   addr.sin_family = AF_INET;
-  if (local) {
-    if ((inet_pton(AF_INET, "127.0.0.1", &(addr.sin_addr))) == -1)
+  if (address) {
+    if (!(inet_pton(AF_INET, address, &(addr.sin_addr)) == 1))
       return -1;
   }
   else
@@ -315,22 +315,22 @@ int ss_listen_on_ipv4_socket_impl(int local, unsigned short port, int backlog) {
   return sock;
 }
 
-// arguments: if local is true, the socket will only bind on
-// localhost.  If false, it will bind on any interface.  port is the
-// port to listen on.  backlog is the maximum number of queueing
-// connections.
+// arguments: address must be a string in colonned hex notation giving
+// the address to bind the socket to.  If address is NULL, the socket
+// will bind on any interface.  port is the port to listen on.
+// backlog is the maximum number of queueing connections.
 
 // return value: file descriptor of socket, or -1 on failure to make
 // an address, -2 on failure to create a socket, -3 on a failure to
 // bind to the socket, and -4 on a failure to listen on the socket
-int ss_listen_on_ipv6_socket_impl(int local, unsigned short port, int backlog) {
+int ss_listen_on_ipv6_socket_impl(const char* address, unsigned short port, int backlog) {
 
   struct sockaddr_in6 addr;
   memset(&addr, 0, sizeof(addr));
 
   addr.sin6_family = AF_INET6;
-  if (local) {
-    if ((inet_pton(AF_INET6, "::1", &(addr.sin6_addr))) == -1)
+  if (address) {
+    if (!(inet_pton(AF_INET6, address, &(addr.sin6_addr)) == 1))
       return -1;
   }
   else

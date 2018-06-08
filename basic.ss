@@ -131,33 +131,53 @@
 
 ;; This procedure builds a listening IPv4 socket.
 ;;
-;; arguments: if 'local' is true, the socket will only bind on
-;; localhost.  If false, it will bind on any interface. ' port' is the
-;; port to listen on.  'backlog' is the maximum number of queueing
-;; connections.  &listen-exception will be raised if the making of a
-;; listening socket fails, to which applying listen-exception? will
-;; return #t.
+;; arguments: 'address' may be a string or a boolean value.  If it is
+;; a string, it must contain the address to bind the socket to in
+;; decimal dotted notation.  Otherwise, if 'address' is boolean #t,
+;; the socket will bind on localhost, and if #f, it will bind on any
+;; interface.  ' port' is the port to listen on.  'backlog' is the
+;; maximum number of queueing connections.  &listen-exception will be
+;; raised if the making of a listening socket fails, to which applying
+;; listen-exception? will return #t.
 ;;
 ;; return value: file descriptor of socket.
-(define (listen-on-ipv4-socket local port backlog)
-  (check-raise-listen-exception
-   (listen-on-ipv4-socket-impl local port backlog)
-   (if local "localhost" "universal addresses")))
+(define (listen-on-ipv4-socket address port backlog)
+  (let-values ([(addr err) (cond [(string? address) (values address address)]
+				 [(boolean? address)
+				  (if address
+				      (values "127.0.0.1" "localhost")
+				      (values #f "universal addresses"))]
+				 [else (raise (condition (make-listen-condition)
+							 (make-who-condition "listen-on-ipv4-socket")
+							 (make-message-condition "Invalid address argument")))])])
+    (check-raise-listen-exception
+     (listen-on-ipv4-socket-impl addr port backlog)
+     err)))
 
 ;; This procedure builds a listening IPv6 socket.
 ;;
-;; arguments: if 'local' is true, the socket will only bind on
-;; localhost.  If false, it will bind on any interface.  'port' is the
-;; port to listen on.  'backlog' is the maximum number of queueing
-;; connections.  &listen-exception will be raised if the making of a
-;; listening socket fails, to which applying listen-exception? will
-;; return #t.
+;; arguments: 'address' may be a string or a boolean value.  If it is
+;; a string, it must contain the address to bind the socket to in
+;; colonned hex notation.  Otherwise, if 'address' is boolean #t, the
+;; socket will bind on localhost, and if #f, it will bind on any
+;; interface.  'port' is the port to listen on.  'backlog' is the
+;; maximum number of queueing connections.  &listen-exception will be
+;; raised if the making of a listening socket fails, to which applying
+;; listen-exception? will return #t.
 ;;
 ;; return value: file descriptor of socket.
-(define (listen-on-ipv6-socket local port backlog)
-  (check-raise-listen-exception
-   (listen-on-ipv6-socket-impl local port backlog)
-   (if local "localhost" "universal addresses")))
+(define (listen-on-ipv6-socket address port backlog)
+  (let-values ([(addr err) (cond [(string? address) (values address address)]
+				 [(boolean? address)
+				  (if address
+				      (values "::1" "localhost")
+				      (values #f "universal addresses"))]
+				 [else (raise (condition (make-listen-condition)
+							 (make-who-condition "listen-on-ipv6-socket")
+							 (make-message-condition "Invalid address argument")))])])
+    (check-raise-listen-exception
+     (listen-on-ipv6-socket-impl addr port backlog)
+     err)))
 
 ;; This procedure builds a listening unix domain socket.
 ;;
