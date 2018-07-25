@@ -74,7 +74,7 @@
 
 ;; return value: file descriptor of socket, or -1 on failure to make
 ;; an address, -2 on failure to create a socket, -3 on a failure to
-;; bind to the socket, and -4 on a failure to listen on the socket
+;; bind to the socket, and -4 on a failure to listen on the socket.
 (define listen-on-ipv4-socket-impl (foreign-procedure "ss_listen_on_ipv4_socket_impl"
 						      (string unsigned-short int)
 						      int))
@@ -88,7 +88,7 @@
 
 ;; return value: file descriptor of socket, or -1 on failure to make
 ;; an address, -2 on failure to create a socket, -3 on a failure to
-;; bind to the socket, and -4 on a failure to listen on the socket
+;; bind to the socket, and -4 on a failure to listen on the socket.
 (define listen-on-ipv6-socket-impl (foreign-procedure "ss_listen_on_ipv6_socket_impl"
 						      (string unsigned-short int)
 						      int))
@@ -105,7 +105,7 @@
 ;; return value: file descriptor of socket, or -1 if 'pathname' is too
 ;; long for the socket implementation, -2 on failure to create a
 ;; socket, -3 on a failure to bind to the socket, and -4 on a failure
-;; to listen on the socket
+;; to listen on the socket.
 (define listen-on-unix-socket-impl (foreign-procedure "ss_listen_on_unix_socket_impl"
 						      (string int boolean)
 						      int))
@@ -120,7 +120,7 @@
 
 ;; return value: file descriptor for the connection on success, -1 on
 ;; failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
-;; socket
+;; socket.
 (define accept-ipv4-connection-impl (foreign-procedure "ss_accept_ipv4_connection_impl"
 						       (int u32*)
 						       int))
@@ -135,7 +135,7 @@
 
 ;; return value: file descriptor for the connection on success, -1 on
 ;; failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
-;; socket
+;; socket.
 (define accept-ipv6-connection-impl (foreign-procedure "ss_accept_ipv6_connection_impl"
 						       (int u8*)
 						       int))
@@ -147,7 +147,7 @@
 
 ;; return value: file descriptor for the connection on success, -1 on
 ;; failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
-;; socket
+;; socket.
 (define accept-unix-connection-impl (foreign-procedure "ss_accept_unix_connection_impl"
 						       (int)
 						       int))

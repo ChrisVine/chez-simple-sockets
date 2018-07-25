@@ -115,6 +115,13 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
       err = -2;
       break;
     }
+    // setting FD_CLOEXEC creates the traditional race if another
+    // thread is running in the program and it might exec concurrently
+    // with the creation of the socket in this thread, but we can only
+    // do what we can do: linux-specific versions of socket() to avoid
+    // this are probably not a good idea
+    fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
+
     if (!blocking && !(ss_set_fd_non_blocking(sock))) {
       close(sock);
       err = -2;
@@ -191,6 +198,13 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
       err = -2;
       break;
     }
+    // setting FD_CLOEXEC creates the traditional race if another
+    // thread is running in the program and it might exec concurrently
+    // with the creation of the socket in this thread, but we can only
+    // do what we can do: linux-specific versions of socket() to avoid
+    // this are probably not a good idea
+    fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
+
     if (!blocking && !(ss_set_fd_non_blocking(sock))) {
       close(sock);
       err = -2;
@@ -250,9 +264,17 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
   if (sock == -1) {
     err = -2;
   }
-  else if (!blocking && !(ss_set_fd_non_blocking(sock))) {
-    close(sock);
-    err = -2;
+  else {
+    // setting FD_CLOEXEC creates the traditional race if another
+    // thread is running in the program and it might exec concurrently
+    // with the creation of the socket in this thread, but we can only
+    // do what we can do: linux-specific versions of socket() to avoid
+    // this are probably not a good idea
+    fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
+    if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+      close(sock);
+      err = -2;
+    }
   }
 
   if (!err) {
@@ -279,7 +301,7 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
 
 // return value: file descriptor of socket, or -1 on failure to make
 // an address, -2 on failure to create a socket, -3 on a failure to
-// bind to the socket, and -4 on a failure to listen on the socket
+// bind to the socket, and -4 on a failure to listen on the socket.
 int ss_listen_on_ipv4_socket_impl(const char* address, unsigned short port, int backlog) {
 
   struct sockaddr_in addr;
@@ -296,6 +318,13 @@ int ss_listen_on_ipv4_socket_impl(const char* address, unsigned short port, int 
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1)
     return -2;
+  // setting FD_CLOEXEC creates the traditional race if another thread
+  // is running in the program and it might exec concurrently with the
+  // creation of the socket in this thread, but we can only do what we
+  // can do: linux-specific versions of socket() to avoid this are
+  // probably not a good idea
+  fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
+
   int optval = 1;
   // we don't need to check the return value of setsockopt() here
   setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
@@ -322,7 +351,7 @@ int ss_listen_on_ipv4_socket_impl(const char* address, unsigned short port, int 
 
 // return value: file descriptor of socket, or -1 on failure to make
 // an address, -2 on failure to create a socket, -3 on a failure to
-// bind to the socket, and -4 on a failure to listen on the socket
+// bind to the socket, and -4 on a failure to listen on the socket.
 int ss_listen_on_ipv6_socket_impl(const char* address, unsigned short port, int backlog) {
 
   struct sockaddr_in6 addr;
@@ -339,6 +368,13 @@ int ss_listen_on_ipv6_socket_impl(const char* address, unsigned short port, int 
   int sock = socket(AF_INET6, SOCK_STREAM, 0);
   if (sock == -1)
     return -2;
+  // setting FD_CLOEXEC creates the traditional race if another thread
+  // is running in the program and it might exec concurrently with the
+  // creation of the socket in this thread, but we can only do what we
+  // can do: linux-specific versions of socket() to avoid this are
+  // probably not a good idea
+  fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
+
   int optval = 1;
   // we don't need to check the return value of setsockopt() here
   setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
@@ -367,7 +403,7 @@ int ss_listen_on_ipv6_socket_impl(const char* address, unsigned short port, int 
 // return value: file descriptor of socket, or -1 if 'pathname' is too
 // long for the socket implementation, -2 on failure to create a
 // socket, -3 on a failure to bind to the socket, and -4 on a failure
-// to listen on the socket
+// to listen on the socket.
 int ss_listen_on_unix_socket_impl(const char* pathname, int backlog, int error_on_existing) {
 
   struct sockaddr_un addr;
@@ -384,6 +420,12 @@ int ss_listen_on_unix_socket_impl(const char* pathname, int backlog, int error_o
   int sock = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sock == -1)
     return -2;
+  // setting FD_CLOEXEC creates the traditional race if another thread
+  // is running in the program and it might exec concurrently with the
+  // creation of the socket in this thread, but we can only do what we
+  // can do: linux-specific versions of socket() to avoid this are
+  // probably not a good idea
+  fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
     
   if ((bind(sock, (struct sockaddr*)&addr, sizeof(addr))) == -1) {
     close(sock);
@@ -405,7 +447,7 @@ int ss_listen_on_unix_socket_impl(const char* pathname, int backlog, int error_o
 
 // return value: file descriptor for the connection on success, -1 on
 // failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
-// socket
+// socket.
 int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
 
   struct sockaddr_in addr;
@@ -419,6 +461,15 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
   int connect_sock;
   do {
     connect_sock = accept(sock, (struct sockaddr*)&addr, &addr_len);
+    if (connect_sock != -1) {
+      // setting FD_CLOEXEC creates the traditional race if another
+      // thread is running in the program and it might exec
+      // concurrently with the creation of the connection socket in
+      // this thread, but we can only do what we can do:
+      // linux-specific versions of accept() to avoid this are
+      // probably not a good idea
+      fcntl(connect_sock, F_SETFD, fcntl(connect_sock, F_GETFD) | FD_CLOEXEC);
+    }
   } while (connect_sock == -1 && errno == EINTR);
 
   int err = errno;
@@ -446,7 +497,7 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
 
 // return value: file descriptor for the connection on success, -1 on
 // failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
-// socket
+// socket.
 int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
 
   struct sockaddr_in6 addr;
@@ -460,6 +511,15 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
   int connect_sock;
   do {
     connect_sock = accept(sock, (struct sockaddr*)&addr, &addr_len);
+    if (connect_sock != -1) {
+      // setting FD_CLOEXEC creates the traditional race if another
+      // thread is running in the program and it might exec
+      // concurrently with the creation of the connection socket in
+      // this thread, but we can only do what we can do:
+      // linux-specific versions of accept() to avoid this are
+      // probably not a good idea
+      fcntl(connect_sock, F_SETFD, fcntl(connect_sock, F_GETFD) | FD_CLOEXEC);
+    }
   } while (connect_sock == -1 && errno == EINTR);
 
   int err = errno;
@@ -484,7 +544,7 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
 
 // return value: file descriptor for the connection on success, -1 on
 // failure or -2 if EAGAIN or EWOULDBLOCK encountered on non-blocking
-// socket
+// socket.
 int ss_accept_unix_connection_impl(int sock) {
 
   struct sockaddr_un addr;
@@ -497,6 +557,15 @@ int ss_accept_unix_connection_impl(int sock) {
   int connect_sock;
   do {
     connect_sock = accept(sock, (struct sockaddr*)&addr, &addr_len);
+    if (connect_sock != -1) {
+      // setting FD_CLOEXEC creates the traditional race if another
+      // thread is running in the program and it might exec
+      // concurrently with the creation of the connection socket in
+      // this thread, but we can only do what we can do:
+      // linux-specific versions of accept() to avoid this are
+      // probably not a good idea
+      fcntl(connect_sock, F_SETFD, fcntl(connect_sock, F_GETFD) | FD_CLOEXEC);
+    }
   } while (connect_sock == -1 && errno == EINTR);
 
   int err = errno;
