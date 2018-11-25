@@ -480,6 +480,11 @@ non-blocking by this procedure.
 On success, this procedure returns the file descriptor for the
 connection socket.  That file descriptor will be set non-blocking.
 
+This procedure will not call 'await' if a connection is immediately
+available to be accepted without waiting: instead, after accepting the
+connection this procedure would return straight away without invoking
+the event loop.
+
 ***
 `(await-accept-ipv6-connection! await resume [loop] sock connection)`
 
@@ -509,6 +514,11 @@ non-blocking by this procedure.
 On success, this procedure returns the file descriptor for the
 connection socket.  That file descriptor will be set non-blocking.
 
+This procedure will not call 'await' if a connection is immediately
+available to be accepted without waiting: instead, after accepting the
+connection this procedure would return straight away without invoking
+the event loop.
+
 ***
 `(await-accept-unix-connection! await resume [loop] sock)`
 
@@ -534,3 +544,8 @@ non-blocking by this procedure.
 
 On success, this procedure returns the file descriptor for the
 connection socket.  That file descriptor will be set non-blocking.
+
+This procedure will not call 'await' if a connection is immediately
+available to be accepted without waiting: instead, after accepting the
+connection this procedure would return straight away without invoking
+the event loop.

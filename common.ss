@@ -29,7 +29,7 @@
 ;; false, the file descriptor is set non-blocking and this function
 ;; will return before the connection is made.
 
-;; return value: file descriptor of socket, or -1 on failure to loop
+;; return value: file descriptor of socket, or -1 on failure to look
 ;; up address, -2 on failure to construct a socket and -3 on a failure
 ;; to connect with blocking true.
 (define connect-to-ipv4-host-impl (foreign-procedure "ss_connect_to_ipv4_host_impl"
@@ -45,7 +45,7 @@
 ;; false, the file descriptor is set non-blocking and this function
 ;; will return before the connection is made.
 
-;; return value: file descriptor of socket, or -1 on failure to loop
+;; return value: file descriptor of socket, or -1 on failure to look
 ;; up address, -2 on failure to construct a socket and -3 on a failure
 ;; to connect with blocking true.
 (define connect-to-ipv6-host-impl (foreign-procedure "ss_connect_to_ipv6_host_impl"

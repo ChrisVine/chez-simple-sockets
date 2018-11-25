@@ -201,6 +201,11 @@
 ;;
 ;; On success, this procedure returns the file descriptor for the
 ;; connection socket.  That file descriptor will be set non-blocking.
+;;
+;; This procedure will not call 'await' if a connection is immediately
+;; available to be accepted without waiting: instead, after accepting
+;; the connection this procedure would return straight away without
+;; invoking the event loop.
 (define await-accept-ipv4-connection!
   (case-lambda
     [(await resume sock connection)
@@ -249,6 +254,11 @@
 ;;
 ;; On success, this procedure returns the file descriptor for the
 ;; connection socket.  That file descriptor will be set non-blocking.
+;;
+;; This procedure will not call 'await' if a connection is immediately
+;; available to be accepted without waiting: instead, after accepting
+;; the connection this procedure would return straight away without
+;; invoking the event loop.
 (define await-accept-ipv6-connection!
   (case-lambda
     [(await resume sock connection)
@@ -294,6 +304,11 @@
 ;;
 ;; On success, this procedure returns the file descriptor for the
 ;; connection socket.  That file descriptor will be set non-blocking.
+;;
+;; This procedure will not call 'await' if a connection is immediately
+;; available to be accepted without waiting: instead, after accepting
+;; the connection this procedure would return straight away without
+;; invoking the event loop.
 (define await-accept-unix-connection!
   (case-lambda
     [(await resume sock)
