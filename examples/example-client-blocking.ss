@@ -18,7 +18,7 @@
 
 ;; This is an example file for using synchronous (blocking) reads and
 ;; writes on sockets.  It will provide the caller's IPv4 internet
-;; address from myip.dnsdynamic.org.
+;; address from checkip.dyndns.com.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -26,7 +26,7 @@
 (import (simple-sockets basic)
 	(chezscheme))
 
-(define check-ip "myip.dnsdynamic.org")
+(define check-ip "checkip.dyndns.com")
 
 (define (read-response sockport)
   (let lp ([header-done #f]
