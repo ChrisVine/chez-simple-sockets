@@ -61,8 +61,9 @@
 ;; operates on the event loop passed in as an argument, or if none is
 ;; passed (or #f is passed), on the default event loop.
 ;;
-;; &connect-exception will be raised if the connection attempt fails,
-;; to which applying connect-exception? will return #t.
+;; A &connect-condition exception will be raised if the connection
+;; attempt fails; applying connect-condition? to the raised condition
+;; object will return #t.
 ;;
 ;; On success, this procedure returns the file descriptor of a
 ;; connection socket.  The file descriptor will be set non-blocking.
@@ -113,8 +114,9 @@
 ;; operates on the event loop passed in as an argument, or if none is
 ;; passed (or #f is passed), on the default event loop.
 ;;
-;; &connect-exception will be raised if the connection attempt fails,
-;; to which applying connect-exception? will return #t.
+;; A &connect-condition exception will be raised if the connection
+;; attempt fails; applying connect-condition? to the raised condition
+;; object will return #t.
 ;;
 ;; On success, this procedure returns the file descriptor of a
 ;; connection socket.  The file descriptor will be set non-blocking.
@@ -151,8 +153,9 @@
 ;; operates on the event loop passed in as an argument, or if none is
 ;; passed (or #f is passed), on the default event loop.
 ;;
-;; &connect-exception will be raised if the connection attempt fails,
-;; to which applying connect-exception? will return #t.
+;; A &connect-condition exception will be raised if the connection
+;; attempt fails; applying connect-condition? to the raised condition
+;; object will return #t.
 ;;
 ;; On success, this procedure returns the file descriptor of a
 ;; connection socket.  The file descriptor will be set non-blocking.
@@ -193,8 +196,9 @@
 ;; argument, or if none is passed (or #f is passed), on the default
 ;; event loop.
 ;;
-;; &accept-exception will be raised if connection attempts fail, to
-;; which applying accept-exception? will return #t.
+;; An &accept-condition exception will be raised if connection
+;; attempts fail; applying accept-condition? to the raised condition
+;; object will return #t.
 ;;
 ;; If 'sock' is not a non-blocking descriptor, it will be made
 ;; non-blocking by this procedure.
@@ -246,8 +250,9 @@
 ;; argument, or if none is passed (or #f is passed), on the default
 ;; event loop.
 ;;
-;; &accept-exception will be raised if connection attempts fail, to
-;; which applying accept-exception? will return #t.
+;; An &accept-condition exception will be raised if connection
+;; attempts fail; applying accept-condition? to the raised condition
+;; object will return #t.
 ;;
 ;; If 'sock' is not a non-blocking descriptor, it will be made
 ;; non-blocking by this procedure.
@@ -296,8 +301,9 @@
 ;; argument, or if none is passed (or #f is passed), on the default
 ;; event loop.
 ;;
-;; &accept-exception will be raised if connection attempts fail, to
-;; which applying accept-exception? will return #t.
+;; An &accept-condition exception will be raised if connection
+;; attempts fail; applying accept-condition? to the raised condition
+;; object will return #t.
 ;;
 ;; If 'sock' is not a non-blocking descriptor, it will be made
 ;; non-blocking by this procedure.

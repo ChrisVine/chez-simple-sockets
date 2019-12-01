@@ -86,12 +86,14 @@
 
 ;; This procedure makes a connection to a remote IPv4 host.
 ;;
+;; A &connect-condition exception will be raised if the connection
+;; attempt fails; applying connect-condition? to the raised condition
+;; object will return #t.
+;;
 ;; arguments: if 'port' is greater than 0, it is set as the port to
 ;; which the connection will be made, otherwise this is deduced from
 ;; the 'service' argument.  The 'service' argument may be #f, in which
 ;; case a port number greater than 0 must be given.
-;; &connect-exception will be raised if the connection attempt fails,
-;; to which applying connect-exception? will return #t.
 ;;
 ;; return value: file descriptor of the socket.  The file descriptor
 ;; will be blocking.
@@ -102,12 +104,14 @@
 
 ;; This procedure makes a connection to a remote IPv6 host.
 ;;
+;; A &connect-condition exception will be raised if the connection
+;; attempt fails; applying connect-condition? to the raised condition
+;; object will return #t.
+;;
 ;; arguments: if 'port' is greater than 0, it is set as the port to
 ;; which the connection will be made, otherwise this is deduced from
 ;; the 'service' argument.  The 'service' argument may be #f, in which
 ;; case a port number greater than 0 must be given.
-;; &connect-exception will be raised if the connection attempt fails,
-;; to which applying connect-exception? will return #t.
 ;;
 ;; return value: file descriptor of the socket.  The file descriptor
 ;; will be blocking.
@@ -118,9 +122,12 @@
 
 ;; This procedure makes a connection to a unix domain host.
 ;;
+;; A &connect-condition exception will be raised if the connection
+;; attempt fails; applying connect-condition? to the raised condition
+;; object will return #t.
+;;
 ;; arguments: pathname is the filesystem name of the unix domain
-;; socket.  &connect-exception will be raised if the connection
-;; attempt fails, to which applying connect-exception? will return #t.
+;; socket.
 ;;
 ;; return value: file descriptor of the socket.  The file descriptor
 ;; will be blocking.
@@ -131,14 +138,16 @@
 
 ;; This procedure builds a listening IPv4 socket.
 ;;
+;; A &listen-condition exception will be raised if the making of a
+;; listening socket fails; applying listen-condition? to the raised
+;; condition object will return #t.
+;;
 ;; arguments: 'address' may be a string or a boolean value.  If it is
 ;; a string, it must contain the address to bind the socket to in
 ;; decimal dotted notation.  Otherwise, if 'address' is boolean #t,
 ;; the socket will bind on localhost, and if #f, it will bind on any
-;; interface.  ' port' is the port to listen on.  'backlog' is the
-;; maximum number of queueing connections.  &listen-exception will be
-;; raised if the making of a listening socket fails, to which applying
-;; listen-exception? will return #t.
+;; interface.  'port' is the port to listen on.  'backlog' is the
+;; maximum number of queueing connections.
 ;;
 ;; return value: file descriptor of socket.
 (define (listen-on-ipv4-socket address port backlog)
@@ -156,14 +165,16 @@
 
 ;; This procedure builds a listening IPv6 socket.
 ;;
+;; A &listen-condition exception will be raised if the making of a
+;; listening socket fails; applying listen-condition? to the raised
+;; condition object will return #t.
+;;
 ;; arguments: 'address' may be a string or a boolean value.  If it is
 ;; a string, it must contain the address to bind the socket to in
 ;; colonned hex notation.  Otherwise, if 'address' is boolean #t, the
 ;; socket will bind on localhost, and if #f, it will bind on any
 ;; interface.  'port' is the port to listen on.  'backlog' is the
-;; maximum number of queueing connections.  &listen-exception will be
-;; raised if the making of a listening socket fails, to which applying
-;; listen-exception? will return #t.
+;; maximum number of queueing connections.
 ;;
 ;; return value: file descriptor of socket.
 (define (listen-on-ipv6-socket address port backlog)
@@ -181,6 +192,10 @@
 
 ;; This procedure builds a listening unix domain socket.
 ;;
+;; A &listen-condition exception will be raised if the making of a
+;; listening socket fails; applying listen-condition? to the raised
+;; condition object will return #t.
+;;
 ;; arguments: 'pathname' is the filesystem name of the unix domain
 ;; socket.  'backlog' is the maximum number of queueing connections.
 ;; The 'error-on-existing' argument is optional: it it is set #t, any
@@ -188,8 +203,6 @@
 ;; will cause a &listen exception to arise when the unix domain socket
 ;; is bound.  If set #f, or the argument is not provided, then any
 ;; prior existing socket will be deleted before binding.
-;; &listen-exception will be raised if the making of a listening
-;; socket fails, to which applying listen-exception? will return #t.
 ;;
 ;; return value: file descriptor of socket.
 (define listen-on-unix-socket
@@ -204,13 +217,15 @@
 ;; This procedure will accept incoming connections on a listening IPv4
 ;; socket.  It will block until a connection is made.
 ;;
+;; An &accept-condition exception will be raised if connection
+;; attempts fail; applying accept-condition? to the raised condition
+;; object will return #t.
+;;
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen-on-ipv4-socket.
 ;; connection is a bytevector of size 4 to be passed to the procedure
 ;; as an out parameter, in which the binary address of the connecting
 ;; client will be placed in network byte order, or #f.
-;; &accept-exception will be raised if connection attempts fail, to
-;; which applying accept-exception? will return #t.
 ;;
 ;; If 'sock' is not a blocking descriptor, it will be made blocking by
 ;; this procedure.
@@ -225,13 +240,15 @@
 ;; This procedure will accept incoming connections on a listening IPv6
 ;; socket.  It will block until a connection is made.
 ;;
+;; An &accept-condition exception will be raised if connection
+;; attempts fail; applying accept-condition? to the raised condition
+;; object will return #t.
+;;
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen-on-ipv6-socket.
 ;; connection is a bytevector of size 16 to be passed to the procedure
 ;; as an out parameter, in which the binary address of the connecting
 ;; client will be placed in network byte order, or #f.
-;; &accept-exception will be raised if connection attempts fail, to
-;; which applying accept-exception? will return #t.
 ;;
 ;; If 'sock' is not a blocking descriptor, it will be made blocking by
 ;; this procedure.
@@ -246,10 +263,12 @@
 ;; This procedure will accept incoming connections on a listening unix
 ;; domain socket.  It will block until a connection is made.
 ;;
+;; An &accept-condition exception will be raised if connection
+;; attempts fail; applying accept-condition? to the raised condition
+;; object will return #t.
+;;
 ;; arguments: sock is the file descriptor of the socket on which to
 ;; accept connections, as returned by listen-on-unix-socket.
-;; &accept-exception will be raised if connection attempts fail, to
-;; which applying accept-exception? will return #t.
 ;;
 ;; If 'sock' is not a blocking descriptor, it will be made blocking by
 ;; this procedure.

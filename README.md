@@ -56,8 +56,9 @@ The 'address' argument should be a string which may be either the
 domain name of the server to which a connection is to be made or a
 dotted decimal address.
 
-&connect-condition will be raised if the connection attempt fails, to
-which applying connect-condition? will return #t.
+A &connect-condition exception will be raised if the connection
+attempt fails; applying connect-condition? to the raised condition
+object will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -75,8 +76,9 @@ The 'address' argument should be a string which may be either the
 domain name of the server to which a connection is to be made or a
 colonned IPv6 hex address.
 
-&connect-condition will be raised if the connection attempt fails, to
-which applying connect-condition? will return #t.
+A &connect-condition exception will be raised if the connection
+attempt fails; applying connect-condition? to the raised condition
+object will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -89,8 +91,9 @@ This will connect to a unix domain host.
 The 'pathname' argument should be a string comprising the filesystem
 name of the unix domain socket.
 
-&connect-condition will be raised if the connection attempt fails, to
-which applying connect-condition? will return #t.
+A &connect-condition exception will be raised if the connection
+attempt fails; applying connect-condition? to the raised condition
+object will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -106,8 +109,9 @@ if 'address' is boolean #t, the socket will bind on localhost, and if
 'backlog' is the maximum number of queueing connections provided by
 the socket.
 
-&listen-condition will be raised if the making of a listening socket
-fails, to which applying listen-condition? will return #t.
+A &listen-condition exception will be raised if the making of a
+listening socket fails; applying listen-condition? to the raised
+condition object will return #t.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -123,8 +127,9 @@ it will bind on any interface.  'port' is the port to listen on.
 'backlog' is the maximum number of queueing connections provided by
 the socket.
 
-&listen-condition will be raised if the making of a listening socket
-fails, to which applying listen-condition? will return #t.
+A &listen-condition exception will be raised if the making of a
+listening socket fails; applying listen-condition? to the raised
+condition object will return #t.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -141,8 +146,9 @@ set #t, any existing or stale socket or other file by the name of
 domain socket is bound.  If set #f, or the argument is not provided,
 then any prior existing socket will be deleted before binding.
 
-&listen-condition will be raised if the making of a listening socket
-fails, to which applying listen-condition? will return #t.
+A &listen-condition exception will be raised if the making of a
+listening socket fails; applying listen-condition? to the raised
+condition object will return #t.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -157,9 +163,11 @@ socket.  It will block until a connection is made.
 connections, as returned by listen-on-ipv4-socket.  'connection' is a
 bytevector of size 4 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
-be placed in network byte order, or #f.  &accept-condition will be
-raised if connection attempts fail, to which applying
-accept-condition? will return #t.
+be placed in network byte order, or #f.
+
+An &accept-condition exception will be raised if connection attempts
+fail; applying accept-condition? to the raised condition object will
+return #t.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -177,9 +185,11 @@ socket.  It will block until a connection is made.
 connections, as returned by listen-on-ipv6-socket.  'connection' is a
 bytevector of size 16 to be passed to the procedure as an out
 parameter, in which the binary address of the connecting client will
-be placed in network byte order, or #f.  &accept-condition will be
-raised if connection attempts fail, to which applying
-accept-condition? will return #t.
+be placed in network byte order, or #f.
+
+An &accept-condition exception will be raised if connection attempts
+fail; applying accept-condition? to the raised condition object will
+return #t.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -194,9 +204,11 @@ This procedure will accept incoming connections on a listening unix
 domain socket.  It will block until a connection is made.
 
 'sock' is the file descriptor of the socket on which to accept
-connections, as returned by listen-on-unix-socket.  &accept-condition
-will be raised if connection attempts fail, to which applying
-accept-condition? will return #t.
+connections, as returned by listen-on-unix-socket.
+
+An &accept-condition exception will be raised if connection attempts
+fail; applying accept-condition? to the raised condition object will
+return #t.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -386,8 +398,9 @@ The 'loop' argument is optional: this procedure operates on the event
 loop passed in as an argument, or if none is passed (or #f is passed),
 on the default event loop.
 
-&connect-condition will be raised if the connection attempt fails, to
-which applying connect-condition? will return #t.
+A &connect-condition exception will be raised if the connection
+attempt fails; applying connect-condition? to the raised condition
+object will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -422,8 +435,9 @@ The 'loop' argument is optional: this procedure operates on the event
 loop passed in as an argument, or if none is passed (or #f is passed),
 on the default event loop.
 
-&connect-condition will be raised if the connection attempt fails, to
-which applying connect-condition? will return #t.
+A &connect-condition exception will be raised if the connection
+attempt fails; applying connect-condition? to the raised condition
+object will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -445,8 +459,9 @@ The 'loop' argument is optional: this procedure operates on the event
 loop passed in as an argument, or if none is passed (or #f is passed),
 on the default event loop.
 
-&connect-condition will be raised if the connection attempt fails, to
-which applying connect-condition? will return #t.
+A &connect-condition exception will be raised if the connection
+attempt fails; applying connect-condition? to the raised condition
+object will return #t.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -471,8 +486,9 @@ arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
 \#f is passed), on the default event loop.
 
-&accept-condition will be raised if connection attempts fail, to which
-applying accept-condition? will return #t.
+An &accept-condition exception will be raised if connection attempts
+fail; applying accept-condition? to the raised condition object will
+return #t.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
@@ -505,8 +521,9 @@ arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
 \#f is passed), on the default event loop.
 
-&accept-condition will be raised if connection attempts fail, to which
-applying accept-condition? will return #t.
+An &accept-condition exception will be raised if connection attempts
+fail; applying accept-condition? to the raised condition object will
+return #t.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
@@ -536,8 +553,9 @@ arguments).  The 'loop' argument is optional: this procedure operates
 on the event loop passed in as an argument, or if none is passed (or
 \#f is passed), on the default event loop.
 
-&accept-condition will be raised if connection attempts fail, to which
-applying accept-condition? will return #t.
+An &accept-condition exception will be raised if connection attempts
+fail; applying accept-condition? to the raised condition object will
+return #t.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
