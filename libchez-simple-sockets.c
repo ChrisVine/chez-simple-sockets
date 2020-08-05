@@ -282,7 +282,7 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
     do {
       res = connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
     } while (res == -1 && errno == EINTR);
-    if (res == -1 && errno != EINPROGRESS && errno != EAGAIN) {
+    if (res == -1 && errno != EINPROGRESS) {
       close(sock);
       err = -3;
     }
