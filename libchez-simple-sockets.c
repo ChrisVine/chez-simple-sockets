@@ -95,11 +95,14 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
   Sdeactivate_thread();
 
   struct addrinfo* info;
+  int saved_errno = 0;
   if (getaddrinfo(address, service, &hints, &info)
       || info == NULL) {
+    saved_errno = errno;
     Sactivate_thread();
     Sunlock_object((void*)address);
     if (service) Sunlock_object((void*)service);
+    errno = saved_errno;
     return -1;
   }
 
@@ -112,6 +115,7 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
     err = 0;
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1) {
+      saved_errno = errno;
       err = -2;
       break;
     }
@@ -123,6 +127,7 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
     fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
 
     if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+      saved_errno = errno;
       close(sock);
       err = -2;
       break;
@@ -137,6 +142,7 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
     do {
       res = connect(sock, in, sizeof(struct sockaddr_in));
     } while (res == -1 && errno == EINTR);
+    saved_errno = errno;
     if (res == -1 && errno != EINPROGRESS) {
       close(sock);
       err = -3;
@@ -149,6 +155,7 @@ int ss_connect_to_ipv4_host_impl(const char* address, const char* service,
   Sunlock_object((void*)address);
   if (service) Sunlock_object((void*)service);
   freeaddrinfo(info);
+  errno = saved_errno;
 
   if (err) return err;
   return sock;
@@ -178,11 +185,14 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
   Sdeactivate_thread();
 
   struct addrinfo* info;
+  int saved_errno = 0;
   if (getaddrinfo(address, service, &hints, &info)
       || info == NULL) {
+    saved_errno = errno;
     Sactivate_thread();
     Sunlock_object((void*)address);
     if (service) Sunlock_object((void*)service);
+    errno = saved_errno;
     return -1;
   }
 
@@ -195,6 +205,7 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
     err = 0;
     sock = socket(AF_INET6, SOCK_STREAM, 0);
     if (sock == -1) {
+      saved_errno = errno;
       err = -2;
       break;
     }
@@ -206,6 +217,7 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
     fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
 
     if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+      saved_errno = errno;
       close(sock);
       err = -2;
       break;
@@ -220,6 +232,7 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
     do {
       res = connect(sock, in, sizeof(struct sockaddr_in6));
     } while (res == -1 && errno == EINTR);
+    saved_errno = errno;
     if (res == -1 && errno != EINPROGRESS) {
       close(sock);
       err = -3;
@@ -232,6 +245,7 @@ int ss_connect_to_ipv6_host_impl(const char* address, const char* service,
   Sunlock_object((void*)address);
   if (service) Sunlock_object((void*)service);
   freeaddrinfo(info);
+  errno = saved_errno;
 
   if (err) return err;
   return sock;
@@ -260,10 +274,12 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
   // connect may show latency - release the GC
   Sdeactivate_thread();
 
+  int saved_errno = 0;
   int err = 0;
   int sock = socket(AF_UNIX, SOCK_STREAM, 0);
 
   if (sock == -1) {
+    saved_errno = errno;
     err = -2;
   }
   else {
@@ -274,6 +290,7 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
     // this are probably not a good idea
     fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
     if (!blocking && !(ss_set_fd_non_blocking(sock))) {
+      saved_errno = errno;
       close(sock);
       err = -2;
     }
@@ -284,6 +301,7 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
     do {
       res = connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
     } while (res == -1 && errno == EINTR);
+    saved_errno = errno;
     if (res == -1 && errno != EINPROGRESS) {
       close(sock);
       err = -3;
@@ -291,6 +309,7 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
   }
 
   Sactivate_thread();
+  errno = saved_errno;
 
   if (err) return err;
   return sock;
@@ -334,12 +353,16 @@ int ss_listen_on_ipv4_socket_impl(const char* address, unsigned short port, int 
   addr.sin_port = htons(port);
     
   if ((bind(sock, (struct sockaddr*)&addr, sizeof(addr))) == -1) {
+    int saved_errno = errno;
     close(sock);
+    errno = saved_errno;
     return -3;
   }
 
   if ((listen(sock, backlog)) == -1) {
+    int saved_errno = errno;
     close(sock);
+    errno = saved_errno;
     return -4;
   }
 
@@ -384,12 +407,16 @@ int ss_listen_on_ipv6_socket_impl(const char* address, unsigned short port, int 
   addr.sin6_port = htons(port);
     
   if ((bind(sock, (struct sockaddr*)&addr, sizeof(addr))) == -1) {
+    int saved_errno = errno;
     close(sock);
+    errno = saved_errno;
     return -3;
   }
 
   if ((listen(sock, backlog)) == -1) {
+    int saved_errno = errno;
     close(sock);
+    errno = saved_errno;
     return -4;
   }
 
@@ -412,8 +439,10 @@ int ss_listen_on_unix_socket_impl(const char* pathname, int backlog, int error_o
   memset(&addr, 0, sizeof(addr));
 
   // '>=' not '>' in order to accomodate final '\0' byte
-  if (strlen(pathname) >= sizeof(addr.sun_path))
+  if (strlen(pathname) >= sizeof(addr.sun_path)) {
+    errno = 0;
     return -1;
+  }
   addr.sun_family = AF_UNIX;
   strcpy(addr.sun_path, pathname);
 
@@ -430,12 +459,16 @@ int ss_listen_on_unix_socket_impl(const char* pathname, int backlog, int error_o
   fcntl(sock, F_SETFD, fcntl(sock, F_GETFD) | FD_CLOEXEC);
     
   if ((bind(sock, (struct sockaddr*)&addr, sizeof(addr))) == -1) {
+    int saved_errno = errno;
     close(sock);
+    errno = saved_errno;
     return -3;
   }
 
   if ((listen(sock, backlog)) == -1) {
+    int saved_errno = errno;
     close(sock);
+    errno = saved_errno;
     return -4;
   }
 
@@ -474,16 +507,18 @@ int ss_accept_ipv4_connection_impl(int sock, uint32_t* connection) {
     }
   } while (connect_sock == -1 && errno == EINTR);
 
-  int err = errno;
+  int saved_errno = errno;
   Sactivate_thread();
   if (connection) Sunlock_object((void*)connection);
 
   if (addr_len > sizeof(addr)) {
     close(connect_sock);
+    errno = saved_errno;
     return -1;
   }
   if (connect_sock == -1) {
-    if (err == EAGAIN || err == EWOULDBLOCK)
+    errno = saved_errno;
+    if (saved_errno == EAGAIN || saved_errno == EWOULDBLOCK)
       return -2;
     return -1;
   }
@@ -524,16 +559,18 @@ int ss_accept_ipv6_connection_impl(int sock, uint8_t* connection) {
     }
   } while (connect_sock == -1 && errno == EINTR);
 
-  int err = errno;
+  int saved_errno = errno;
   Sactivate_thread();
   if (connection) Sunlock_object((void*)connection);
 
   if (addr_len > sizeof(addr)) {
     close(connect_sock);
+    errno = saved_errno;
     return -1;
   }
   if (connect_sock == -1) {
-    if (err == EAGAIN || err == EWOULDBLOCK)
+    errno = saved_errno;
+    if (saved_errno == EAGAIN || saved_errno == EWOULDBLOCK)
       return -2;
     return -1;
   }
@@ -570,15 +607,17 @@ int ss_accept_unix_connection_impl(int sock) {
     }
   } while (connect_sock == -1 && errno == EINTR);
 
-  int err = errno;
+  int saved_errno = errno;
   Sactivate_thread();
 
   if (addr_len > sizeof(addr)) {
     close(connect_sock);
+    errno = saved_errno;
     return -1;
   }
   if (connect_sock == -1) {
-    if (err == EAGAIN || err == EWOULDBLOCK)
+    errno = saved_errno;
+    if (saved_errno == EAGAIN || saved_errno == EWOULDBLOCK)
       return -2;
     return -1;
   }
