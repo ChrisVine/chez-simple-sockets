@@ -250,8 +250,10 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
   memset(&addr, 0, sizeof(addr));
 
   // '>=' not '>' in order to accomodate final '\0' byte
-  if (strlen(pathname) >= sizeof(addr.sun_path))
+  if (strlen(pathname) >= sizeof(addr.sun_path)) {
+    errno = 0;
     return -1;
+  }
   addr.sun_family = AF_UNIX;
   strcpy(addr.sun_path, pathname);
 

@@ -152,45 +152,53 @@
 						       (int)
 						       int))
 
-(define (check-raise-connect-exception sock addr)
+(define (check-raise-connect-exception sock addr err)
   (case sock
     [(-1) (raise (condition (make-connect-condition)
 			    (make-who-condition "check-raise-connect-exception")
 			    (make-message-condition (string-append addr 
 								   ": Unable to look up this address (IP socket) "
-								   "or address too long (UNIX socket)"))))]
+								   "or address too long (UNIX socket)"))
+			    (make-irritants-condition `(errno ,err))))]
     [(-2) (raise (condition (make-connect-condition)
 			    (make-who-condition "check-raise-connect-exception")
-			    (make-message-condition "Unable to construct socket")))]
+			    (make-message-condition "Unable to construct socket")
+			    (make-irritants-condition `(errno ,err))))]
     [(-3) (raise (condition (make-connect-condition)
 			    (make-who-condition "check-raise-connect-exception")
 			    (make-message-condition (string-append "Unable to connect to "
-								   addr))))]
+								   addr))
+			    (make-irritants-condition `(errno ,err))))]
     [else sock]))
 
-(define (check-raise-listen-exception sock addr)
+(define (check-raise-listen-exception sock addr err)
   (case sock
     [(-1) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
 			    (make-message-condition (string-append "Unable to make address for "
-								   addr))))]
+								   addr))
+			    (make-irritants-condition `(errno ,err))))]
     [(-2) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
-			    (make-message-condition "Unable to construct socket\n")))]
+			    (make-message-condition "Unable to construct socket\n")
+			    (make-irritants-condition `(errno ,err))))]
     [(-3) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
 			    (make-message-condition (string-append "Unable to bind to "
-								   addr))))]
+								   addr))
+			    (make-irritants-condition `(errno ,err))))]
     [(-4) (raise (condition (make-listen-condition)
 			    (make-who-condition "check-raise-listen-exception")
-			    (make-message-condition "Unable to listen on socket")))]
+			    (make-message-condition "Unable to listen on socket")
+			    (make-irritants-condition `(errno ,err))))]
 
     [else sock]))
 
-(define (check-raise-accept-exception sock) 
+(define (check-raise-accept-exception sock err) 
   (case sock
     [(-1) (raise (condition (make-accept-condition)
 			    (make-who-condition "check-raise-accept-exception")
-			    (make-message-condition "Unable to accept connection on socket")))]
+			    (make-message-condition "Unable to accept connection on socket")
+			    (make-irritants-condition `(errno ,err))))]
     [(-2) 'eagain]
     [else sock]))

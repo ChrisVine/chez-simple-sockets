@@ -82,10 +82,11 @@
 					  loop)
 	     (await)
 	     (event-loop-remove-write-watch! sock loop)
-	     (if (= 0 (check-sock-error sock))
-		 sock
-		 (check-raise-connect-exception -3 address)))
-	   (check-raise-connect-exception sock address)))]))
+	     (let ([err (check-sock-error sock)])
+	       (if (= 0 err)
+		   sock
+		   (check-raise-connect-exception -3 address err))))
+	   (check-raise-connect-exception sock address (get-errno))))]))
 
 ;; This will connect asynchronously to a remote IPv6 host.  If 'port'
 ;; is greater than 0, it is set as the port to which the connection
@@ -135,10 +136,11 @@
 					  loop)
 	     (await)
 	     (event-loop-remove-write-watch! sock loop)
-	     (if (= 0 (check-sock-error sock))
-		 sock
-		 (check-raise-connect-exception -3 address)))
-	   (check-raise-connect-exception sock address)))]))
+	     (let ([err (check-sock-error sock)])
+	       (if (= 0 err)
+		   sock
+		   (check-raise-connect-exception -3 address err))))
+	   (check-raise-connect-exception sock address (get-errno))))]))
 
 ;; This will connect asynchronously to a unix domain host.
 ;;
@@ -174,10 +176,11 @@
 					  loop)
 	     (await)
 	     (event-loop-remove-write-watch! sock loop)
-	     (if (= 0 (check-sock-error sock))
-		 sock
-		 (check-raise-connect-exception -3 pathname)))
-	   (check-raise-connect-exception sock pathname)))]))
+	     (let ([err (check-sock-error sock)])
+	       (if (= 0 err)
+		   sock
+		   (check-raise-connect-exception -3 pathname err))))
+	   (check-raise-connect-exception sock pathname (get-errno))))]))
 
 ;; This procedure will accept incoming connections on a listening IPv4
 ;; socket asynchronously.
@@ -216,8 +219,8 @@
      (await-accept-ipv4-connection! await resume #f sock connection)]
     [(await resume loop sock connection)
      (set-fd-non-blocking sock)
-     (let lp ([con-fd (check-raise-accept-exception
-		       (accept-ipv4-connection-impl sock connection))])
+     (let lp ([con-fd (let ([res (accept-ipv4-connection-impl sock connection)])
+			(check-raise-accept-exception res (get-errno)))])
        (if (eq? con-fd 'eagain)
 	   (begin
 	     (event-loop-add-read-watch! sock
@@ -227,8 +230,8 @@
 					 loop)
 	     (await)
 	     (event-loop-remove-read-watch! sock loop)
-	     (lp (check-raise-accept-exception
-		  (accept-ipv4-connection-impl sock connection))))
+	     (lp (let ([res (accept-ipv4-connection-impl sock connection)])
+		   (check-raise-accept-exception res (get-errno)))))
 	   (begin
 	     (set-fd-non-blocking con-fd)
 	     con-fd)))]))
@@ -270,8 +273,8 @@
      (await-accept-ipv6-connection! await resume #f sock connection)]
     [(await resume loop sock connection)
      (set-fd-non-blocking sock)
-     (let lp ([con-fd (check-raise-accept-exception
-		       (accept-ipv6-connection-impl sock connection))])
+     (let lp ([con-fd (let ([res (accept-ipv6-connection-impl sock connection)])
+			(check-raise-accept-exception res (get-errno)))])
        (if (eq? con-fd 'eagain)
 	   (begin
 	     (event-loop-add-read-watch! sock
@@ -281,8 +284,8 @@
 					 loop)
 	     (await)
 	     (event-loop-remove-read-watch! sock loop)
-	     (lp (check-raise-accept-exception
-		  (accept-ipv6-connection-impl sock connection))))
+	     (lp (let ([res (accept-ipv6-connection-impl sock connection)])
+		   (check-raise-accept-exception res (get-errno)))))
 	   (begin
 	     (set-fd-non-blocking con-fd)
 	     con-fd)))]))
@@ -321,8 +324,8 @@
      (await-accept-unix-connection! await resume #f sock)]
     [(await resume loop sock)
      (set-fd-non-blocking sock)
-     (let lp ([con-fd (check-raise-accept-exception
-		       (accept-unix-connection-impl sock))])
+     (let lp ([con-fd (let ([res (accept-unix-connection-impl sock)])
+			(check-raise-accept-exception res (get-errno)))])
        (if (eq? con-fd 'eagain)
 	   (begin
 	     (event-loop-add-read-watch! sock
@@ -332,12 +335,12 @@
 					 loop)
 	     (await)
 	     (event-loop-remove-read-watch! sock loop)
-	     (lp (check-raise-accept-exception
-		  (accept-unix-connection-impl sock))))
+	     (lp (let ([res (accept-unix-connection-impl sock)])
+		   (check-raise-accept-exception res (get-errno)))))
 	   (begin
 	     (set-fd-non-blocking con-fd)
 	     con-fd)))]))
-       
+
 ) ;; library
 
 

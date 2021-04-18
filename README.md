@@ -58,7 +58,8 @@ dotted decimal address.
 
 A &connect-condition exception will be raised if the connection
 attempt fails; applying connect-condition? to the raised condition
-object will return #t.
+object will return #t.  The raised condition object includes an
+irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -78,7 +79,8 @@ colonned IPv6 hex address.
 
 A &connect-condition exception will be raised if the connection
 attempt fails; applying connect-condition? to the raised condition
-object will return #t.
+object will return #t.  The raised condition object includes an
+irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -93,7 +95,8 @@ name of the unix domain socket.
 
 A &connect-condition exception will be raised if the connection
 attempt fails; applying connect-condition? to the raised condition
-object will return #t.
+object will return #t.  The raised condition object includes an
+irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be blocking.
@@ -111,7 +114,8 @@ the socket.
 
 A &listen-condition exception will be raised if the making of a
 listening socket fails; applying listen-condition? to the raised
-condition object will return #t.
+condition object will return #t.  The raised condition object includes
+an irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -129,7 +133,8 @@ the socket.
 
 A &listen-condition exception will be raised if the making of a
 listening socket fails; applying listen-condition? to the raised
-condition object will return #t.
+condition object will return #t.  The raised condition object includes
+an irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -148,7 +153,8 @@ then any prior existing socket will be deleted before binding.
 
 A &listen-condition exception will be raised if the making of a
 listening socket fails; applying listen-condition? to the raised
-condition object will return #t.
+condition object will return #t.  The raised condition object includes
+an irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of the server
 socket.
@@ -167,7 +173,8 @@ be placed in network byte order, or #f.
 
 An &accept-condition exception will be raised if connection attempts
 fail; applying accept-condition? to the raised condition object will
-return #t.
+return #t.  The raised condition object includes an irritants
+condition providing the errno number concerned.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -189,7 +196,8 @@ be placed in network byte order, or #f.
 
 An &accept-condition exception will be raised if connection attempts
 fail; applying accept-condition? to the raised condition object will
-return #t.
+return #t.  The raised condition object includes an irritants
+condition providing the errno number concerned.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -208,7 +216,8 @@ connections, as returned by listen-on-unix-socket.
 
 An &accept-condition exception will be raised if connection attempts
 fail; applying accept-condition? to the raised condition object will
-return #t.
+return #t.  The raised condition object includes an irritants
+condition providing the errno number concerned.
 
 If 'sock' is not a blocking descriptor, it will be made blocking by
 this procedure.
@@ -302,7 +311,7 @@ In chez scheme, ports can be constructed from file descriptors using
 the open-fd-input-port, open-fd-output-port and
 open-fd-input/output-port procedures.  The last of those would be
 useful for sockets, except that chez scheme's port implementation has
-the infortunate feature that a port opened and used for both reading
+the unfortunate feature that a port opened and used for both reading
 and writing via the port's buffers must be seekable (that is to say,
 its underlying file descriptor must have a file position pointer).
 For ports representing non-seekable read/write file descriptors such
@@ -400,7 +409,8 @@ on the default event loop.
 
 A &connect-condition exception will be raised if the connection
 attempt fails; applying connect-condition? to the raised condition
-object will return #t.
+object will return #t.  The raised condition object includes an
+irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -437,7 +447,8 @@ on the default event loop.
 
 A &connect-condition exception will be raised if the connection
 attempt fails; applying connect-condition? to the raised condition
-object will return #t.
+object will return #t.  The raised condition object includes an
+irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -461,7 +472,8 @@ on the default event loop.
 
 A &connect-condition exception will be raised if the connection
 attempt fails; applying connect-condition? to the raised condition
-object will return #t.
+object will return #t.  The raised condition object includes an
+irritants condition providing the errno number concerned.
 
 On success, this procedure returns the file descriptor of a connection
 socket.  The file descriptor will be set non-blocking.
@@ -488,7 +500,8 @@ on the event loop passed in as an argument, or if none is passed (or
 
 An &accept-condition exception will be raised if connection attempts
 fail; applying accept-condition? to the raised condition object will
-return #t.
+return #t.  The raised condition object includes an irritants
+condition providing the errno number concerned.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
@@ -523,7 +536,8 @@ on the event loop passed in as an argument, or if none is passed (or
 
 An &accept-condition exception will be raised if connection attempts
 fail; applying accept-condition? to the raised condition object will
-return #t.
+return #t.  The raised condition object includes an irritants
+condition providing the errno number concerned.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.
@@ -555,7 +569,8 @@ on the event loop passed in as an argument, or if none is passed (or
 
 An &accept-condition exception will be raised if connection attempts
 fail; applying accept-condition? to the raised condition object will
-return #t.
+return #t.  The raised condition object includes an irritants
+condition providing the errno number concerned.
 
 If 'sock' is not a non-blocking descriptor, it will be made
 non-blocking by this procedure.

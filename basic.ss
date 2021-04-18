@@ -45,6 +45,17 @@
 
 (include "common.ss")
 
+;; This returns the current C errno value.  It is used internally by
+;; this library, but the main purpose in exporting it to users is to
+;; enable it to be called after write-bytevector or write-string has
+;; returned #f in order to determine the source of the failure to
+;; write.  For example, if errno is 32 then on BSDs and linux, EPIPE
+;; has arisen.  Call this procedure immediately after the failure has
+;; arisen or its value may be superceded by a newer error.
+(define get-errno (foreign-procedure "ss_get_errno"
+				     ()
+				     int))
+
 ;; signature: (set-fd-non-blocking fd)
 ;;
 ;; arguments: a file descriptor.  The descriptor will be made
@@ -98,9 +109,8 @@
 ;; return value: file descriptor of the socket.  The file descriptor
 ;; will be blocking.
 (define (connect-to-ipv4-host address service port)
-  (check-raise-connect-exception
-   (connect-to-ipv4-host-impl address service port #t)
-   address))
+  (let ([res (connect-to-ipv4-host-impl address service port #t)])
+    (check-raise-connect-exception res address (get-errno))))
 
 ;; This procedure makes a connection to a remote IPv6 host.
 ;;
@@ -116,9 +126,8 @@
 ;; return value: file descriptor of the socket.  The file descriptor
 ;; will be blocking.
 (define (connect-to-ipv6-host address service port)
-  (check-raise-connect-exception
-   (connect-to-ipv6-host-impl address service port #t)
-   address))
+  (let ([res (connect-to-ipv6-host-impl address service port #t)])
+    (check-raise-connect-exception res address (get-errno))))
 
 ;; This procedure makes a connection to a unix domain host.
 ;;
@@ -132,9 +141,8 @@
 ;; return value: file descriptor of the socket.  The file descriptor
 ;; will be blocking.
 (define (connect-to-unix-host pathname)
-  (check-raise-connect-exception
-   (connect-to-unix-host-impl pathname #t)
-   pathname))
+  (let ([res (connect-to-unix-host-impl pathname #t)])
+    (check-raise-connect-exception res pathname (get-errno))))
 
 ;; This procedure builds a listening IPv4 socket.
 ;;
@@ -151,17 +159,17 @@
 ;;
 ;; return value: file descriptor of socket.
 (define (listen-on-ipv4-socket address port backlog)
-  (let-values ([(addr err) (cond [(string? address) (values address address)]
-				 [(boolean? address)
-				  (if address
-				      (values "127.0.0.1" "localhost")
-				      (values #f "universal addresses"))]
-				 [else (raise (condition (make-listen-condition)
-							 (make-who-condition "listen-on-ipv4-socket")
-							 (make-message-condition "Invalid address argument")))])])
-    (check-raise-listen-exception
-     (listen-on-ipv4-socket-impl addr port backlog)
-     err)))
+  (let-values ([(addr addr-info) (cond [(string? address) (values address address)]
+				       [(boolean? address)
+					(if address
+					    (values "127.0.0.1" "localhost")
+					    (values #f "universal addresses"))]
+				       [else (raise (condition (make-listen-condition)
+							       (make-who-condition "listen-on-ipv4-socket")
+							       (make-message-condition "Invalid address argument")
+							       (make-irritants-condition '(errno 0))))])])
+    (let ([res (listen-on-ipv4-socket-impl addr port backlog)])
+      (check-raise-listen-exception res addr-info (get-errno)))))
 
 ;; This procedure builds a listening IPv6 socket.
 ;;
@@ -178,17 +186,17 @@
 ;;
 ;; return value: file descriptor of socket.
 (define (listen-on-ipv6-socket address port backlog)
-  (let-values ([(addr err) (cond [(string? address) (values address address)]
-				 [(boolean? address)
-				  (if address
-				      (values "::1" "localhost")
-				      (values #f "universal addresses"))]
-				 [else (raise (condition (make-listen-condition)
-							 (make-who-condition "listen-on-ipv6-socket")
-							 (make-message-condition "Invalid address argument")))])])
-    (check-raise-listen-exception
-     (listen-on-ipv6-socket-impl addr port backlog)
-     err)))
+  (let-values ([(addr addr-info) (cond [(string? address) (values address address)]
+				       [(boolean? address)
+					(if address
+					    (values "::1" "localhost")
+					    (values #f "universal addresses"))]
+				       [else (raise (condition (make-listen-condition)
+							       (make-who-condition "listen-on-ipv6-socket")
+							       (make-message-condition "Invalid address argument")
+							       (make-irritants-condition '(errno 0))))])])
+    (let ([res (listen-on-ipv6-socket-impl addr port backlog)])
+      (check-raise-listen-exception res addr-info (get-errno)))))
 
 ;; This procedure builds a listening unix domain socket.
 ;;
@@ -210,9 +218,8 @@
     [(pathname backlog)
      (listen-on-unix-socket pathname backlog #f)]
     [(pathname backlog error-on-existing)
-     (check-raise-listen-exception
-      (listen-on-unix-socket-impl pathname backlog error-on-existing)
-      pathname)]))
+     (let ([res (listen-on-unix-socket-impl pathname backlog error-on-existing)])
+       (check-raise-listen-exception res pathname (get-errno)))]))
 
 ;; This procedure will accept incoming connections on a listening IPv4
 ;; socket.  It will block until a connection is made.
@@ -234,8 +241,8 @@
 ;; descriptor will be blocking.
 (define (accept-ipv4-connection sock connection)
   (set-fd-blocking sock)
-  (check-raise-accept-exception
-   (accept-ipv4-connection-impl sock connection)))
+  (let ([res (accept-ipv4-connection-impl sock connection)])
+    (check-raise-accept-exception res (get-errno))))
 
 ;; This procedure will accept incoming connections on a listening IPv6
 ;; socket.  It will block until a connection is made.
@@ -257,8 +264,8 @@
 ;; descriptor will be blocking.
 (define (accept-ipv6-connection sock connection)
   (set-fd-blocking sock)
-  (check-raise-accept-exception
-   (accept-ipv6-connection-impl sock connection)))
+  (let ([res (accept-ipv6-connection-impl sock connection)])
+    (check-raise-accept-exception res (get-errno))))
 
 ;; This procedure will accept incoming connections on a listening unix
 ;; domain socket.  It will block until a connection is made.
@@ -277,8 +284,8 @@
 ;; descriptor will be blocking.
 (define (accept-unix-connection sock)
   (set-fd-blocking sock)
-  (check-raise-accept-exception
-   (accept-unix-connection-impl sock)))
+  (let ([res (accept-unix-connection-impl sock)])
+    (check-raise-accept-exception res (get-errno))))
 
 ;; takes a bytevector of size 4 containing an IPv4 address in network
 ;; byte order, say as supplied as the 'connection' argument of
@@ -362,10 +369,12 @@
     [(0) #f]
     [(1) (raise (condition (make-i/o-write-error)
                            (make-who-condition "raise-exception-if-regular-file")
-                           (make-message-condition "write-bytevector procedure cannot be used with regular files")))]
+                           (make-message-condition "write-bytevector procedure cannot be used with regular files")
+			   (make-irritants-condition '(errno 0))))]
     [(-1) (raise (condition (make-i/o-write-error)
                             (make-who-condition "raise-exception-if-regular-file")
-                            (make-message-condition "C fstat() function returned an error")))]))
+                            (make-message-condition "C fstat() function returned an error")
+			    (make-irritants-condition `(errno ,(get-errno)))))]))
 
 ;; In chez scheme, ports can be constructed from file descriptors
 ;; using the open-fd-input-port, open-fd-output-port and
@@ -424,15 +433,5 @@
 ;; chez-a-sync's await-put-string! procedure instead.
 (define (write-string port text)
   (write-bytevector port (string->bytevector text (port-transcoder port))))
-
-;; This returns the current C errno value.  Its main purpose is to be
-;; called after write-bytevector or write-string has returned #f in
-;; order to determine the source of the failure to write.  For
-;; example, if errno is 32 then on BSDs and linux, EPIPE has arisen.
-;; Call this procedure immediately after the failure has arisen or its
-;; value may be superceded by a newer error.
-(define get-errno (foreign-procedure "ss_get_errno"
-				     ()
-				     int))
 
 ) ;; library
