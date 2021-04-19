@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 to 2018 Chris Vine
+  Copyright (C) 2016 to 2021 Chris Vine
 
   This file is licensed under the Apache License, Version 2.0 (the
   "License"); you may not use this file except in compliance with the
@@ -302,7 +302,7 @@ int ss_connect_to_unix_host_impl(const char* pathname, int blocking) {
       res = connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
     } while (res == -1 && errno == EINTR);
     saved_errno = errno;
-    if (res == -1 && errno != EINPROGRESS) {
+    if (res == -1 && errno != EINPROGRESS && errno != EAGAIN) {
       close(sock);
       err = -3;
     }
